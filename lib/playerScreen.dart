@@ -19,13 +19,15 @@ class PlayerScreen extends StatefulWidget {
   PlayerScreen(this.selectedSong, this.songList);
 }
 
-enum PlayerState { destroyed, playing, paused }
+enum PlayerState { destroyed, initialized, stopped, playing, paused }
 
 class _PlayerScreenState extends State<PlayerScreen> {
   Duration duration;
   Duration position;
 
   Map<String, dynamic> httpRequest;
+
+  int prevCount = 0;
 
   SecuredPlayerFlutterPlugin audioPlayer;
 
@@ -65,10 +67,9 @@ class _PlayerScreenState extends State<PlayerScreen> {
         audioPlayer.onPlayerStateChanged.listen((s) {
       if (s == SecuredAudioPlayerState.PLAYING) {
         setState(() => duration = audioPlayer.duration);
-      } else if (s == SecuredAudioPlayerState.DESTROYED) {
-        onComplete();
+      } else if (s == SecuredAudioPlayerState.STOPPED) {
         setState(() {
-          position = duration;
+          position = Duration();
         });
       }
     }, onError: (msg) {
@@ -100,8 +101,6 @@ class _PlayerScreenState extends State<PlayerScreen> {
   }
 
   Future togglePause() async {
-    _positionSubscription = audioPlayer.onAudioPositionChanged
-        .listen((p) => setState(() => position = p));
     if(isPlaying) {
       await audioPlayer.pause();
       setState(() => playerState = PlayerState.paused);
@@ -111,7 +110,39 @@ class _PlayerScreenState extends State<PlayerScreen> {
     }
   }
 
-  void onComplete() {}
+  Future stop() async {
+    await audioPlayer.stop();
+    setState(() => playerState = PlayerState.stopped);
+  }
+
+  Future skipPrev() async {
+    if(prevCount < 1) {
+      await audioPlayer.stop();
+      setState(() {
+        playerState = PlayerState.stopped;
+      });
+      prevCount++;
+    } else {
+      print('go to prev song on playlist.....');
+      prevCount = 0;
+    }
+  }
+
+  void skipNext() {
+    print('go to next song on playlist......');
+  }
+
+  Future destroy() async {
+    await audioPlayer.destroy();
+    setState(() {
+      playerState = PlayerState.destroyed;
+    });
+  }
+
+  void onComplete() {
+    // todo impl onComplete (skip next, or stop)
+    stop();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -178,7 +209,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
                         iconSize: 32,
                         icon: Icon(Icons.skip_previous),
                         onPressed: () {
-                          // todo impl skiprev
+                          skipPrev();
                         }
                     ),
                     IconButton(
@@ -194,7 +225,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
                         iconSize: 32,
                         icon: Icon(Icons.skip_next),
                         onPressed: () {
-                          // todo impl skipNext
+                          skipNext();
                         }
                     )
                   ],
