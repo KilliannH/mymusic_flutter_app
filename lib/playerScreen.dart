@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:securedplayerflutterplugin/securedplayerflutterplugin.dart';
@@ -18,7 +19,7 @@ class PlayerScreen extends StatefulWidget {
   PlayerScreen(this.selectedSong, this.songList);
 }
 
-enum PlayerState { stopped, playing, paused }
+enum PlayerState { destroyed, playing, paused }
 
 class _PlayerScreenState extends State<PlayerScreen> {
   Duration duration;
@@ -28,7 +29,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
 
   SecuredPlayerFlutterPlugin audioPlayer;
 
-  PlayerState playerState = PlayerState.stopped;
+  PlayerState playerState = PlayerState.destroyed;
 
   get isPlaying => playerState == PlayerState.playing;
   get isPaused => playerState == PlayerState.paused;
@@ -52,7 +53,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
   void dispose() {
     _positionSubscription.cancel();
     _audioPlayerStateSubscription.cancel();
-    audioPlayer.stop();
+    audioPlayer.destroy();
     super.dispose();
   }
 
@@ -64,7 +65,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
         audioPlayer.onPlayerStateChanged.listen((s) {
       if (s == SecuredAudioPlayerState.PLAYING) {
         setState(() => duration = audioPlayer.duration);
-      } else if (s == SecuredAudioPlayerState.STOPPED) {
+      } else if (s == SecuredAudioPlayerState.DESTROYED) {
         onComplete();
         setState(() {
           position = duration;
@@ -72,13 +73,16 @@ class _PlayerScreenState extends State<PlayerScreen> {
       }
     }, onError: (msg) {
       setState(() {
-        playerState = PlayerState.stopped;
+        playerState = PlayerState.destroyed;
         duration = Duration(seconds: 0);
         position = Duration(seconds: 0);
       });
     });
     httpRequest = await prepareUrl(widget.selectedSong.filename);
-    play(url: httpRequest['url'], apiKey: httpRequest['apiKey']);
+
+    // song plays when player is initialized
+    await audioPlayer.init(url: httpRequest['url'], apiKey: httpRequest['apiKey']);
+    playerState = PlayerState.playing;
   }
 
   Future<Map<String, dynamic>> prepareUrl(String filename) async {
@@ -95,30 +99,19 @@ class _PlayerScreenState extends State<PlayerScreen> {
     };
   }
 
-  Future play({String url, String apiKey}) async {
-    // url & apiKey are optional and will set the audioPlayer if doesn't exist
-    await audioPlayer.play(url: url, apiKey: apiKey);
-    setState(() {
-      playerState = PlayerState.playing;
-    });
+  Future togglePause() async {
+    _positionSubscription = audioPlayer.onAudioPositionChanged
+        .listen((p) => setState(() => position = p));
+    if(isPlaying) {
+      await audioPlayer.pause();
+      setState(() => playerState = PlayerState.paused);
+    } else {
+      await audioPlayer.play();
+      setState(() => playerState = PlayerState.playing);
+    }
   }
 
-  Future pause() async {
-    await audioPlayer.pause();
-    setState(() => playerState = PlayerState.paused);
-  }
-
-  Future stop() async {
-    await audioPlayer.stop();
-    setState(() {
-      playerState = PlayerState.stopped;
-      position = Duration();
-    });
-  }
-
-  void onComplete() {
-    setState(() => playerState = PlayerState.stopped);
-  }
+  void onComplete() {}
 
   @override
   Widget build(BuildContext context) {
@@ -127,7 +120,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
         body: Center(
             child: Column(children: <Widget>[
                 Padding(
-                  padding: EdgeInsets.only(top: 40),
+                  padding: EdgeInsets.only(top: 35),
                   child: Image(
                       image: NetworkImage(widget.selectedSong.albumImg),
                       width: 300,
@@ -143,7 +136,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
                   padding: EdgeInsets.only(top: 0),
                   child: Text(
                     widget.selectedSong.title,
-                    style: TextStyle(fontSize: 16),
+                    style: TextStyle(fontSize: 18),
                   )),
                 Padding(
                   padding: EdgeInsets.only(top: 18),
@@ -160,13 +153,13 @@ class _PlayerScreenState extends State<PlayerScreen> {
                     Padding(
                       padding: EdgeInsets.symmetric(horizontal: 24),
                       child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: <Widget>[
                           Text(
                           position != null
                               ? positionText : '',
                           style: TextStyle(fontSize: 16.0),
                           ),
-                          Spacer(),
                           Text(
                             duration != null ? durationText : '',
                             style: TextStyle(fontSize: 16.0),
@@ -176,6 +169,37 @@ class _PlayerScreenState extends State<PlayerScreen> {
                     )
                   ],)
                 ),
+              Padding(
+                padding: EdgeInsets.only(bottom :0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    IconButton(
+                        iconSize: 32,
+                        icon: Icon(Icons.skip_previous),
+                        onPressed: () {
+                          // todo impl skiprev
+                        }
+                    ),
+                    IconButton(
+                        iconSize: 32,
+                        icon: isPlaying ? Icon(Icons.pause) : Icon(Icons.play_arrow),
+                        onPressed: () {
+                          setState(() {
+                            togglePause();
+                          });
+                        }
+                    ),
+                    IconButton(
+                        iconSize: 32,
+                        icon: Icon(Icons.skip_next),
+                        onPressed: () {
+                          // todo impl skipNext
+                        }
+                    )
+                  ],
+                ),
+              )
             ]),
         ),
     );
