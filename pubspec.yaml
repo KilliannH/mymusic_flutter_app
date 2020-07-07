@@ -20,7 +20,7 @@ dependencies:
   flutter:
     sdk: flutter
   http: ^0.12.0+4
-  securedplayerflutterplugin: ^1.0.6
+  securedplayerflutterplugin: ^1.0.8
 
 
   # The following adds the Cupertino Icons font to your application.

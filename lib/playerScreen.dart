@@ -27,8 +27,6 @@ class _PlayerScreenState extends State<PlayerScreen> {
 
   Map<String, dynamic> httpRequest;
 
-  int prevCount = 0;
-
   SecuredPlayerFlutterPlugin audioPlayer;
 
   PlayerState playerState = PlayerState.destroyed;
@@ -65,13 +63,11 @@ class _PlayerScreenState extends State<PlayerScreen> {
         .listen((p) => setState(() => position = p));
     _audioPlayerStateSubscription =
         audioPlayer.onPlayerStateChanged.listen((s) {
-      if (s == SecuredAudioPlayerState.PLAYING) {
-        setState(() => duration = audioPlayer.duration);
-      } else if (s == SecuredAudioPlayerState.STOPPED) {
-        setState(() {
-          position = Duration();
-        });
-      }
+          if (s == SecuredAudioPlayerState.INITIALIZED) {
+            onInitialized();
+          } else if (s == SecuredAudioPlayerState.PLAYING) {
+            setState(() => duration = audioPlayer.duration);
+          }
     }, onError: (msg) {
       setState(() {
         playerState = PlayerState.destroyed;
@@ -83,7 +79,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
 
     // song plays when player is initialized
     await audioPlayer.init(url: httpRequest['url'], apiKey: httpRequest['apiKey']);
-    playerState = PlayerState.playing;
+    playerState = PlayerState.initialized;
   }
 
   Future<Map<String, dynamic>> prepareUrl(String filename) async {
@@ -100,6 +96,18 @@ class _PlayerScreenState extends State<PlayerScreen> {
     };
   }
 
+  Future play() async {
+    await audioPlayer.play();
+    setState(() {
+      playerState = PlayerState.playing;
+    });
+  }
+
+  Future pause() async {
+    await audioPlayer.pause();
+    setState(() => playerState = PlayerState.paused);
+  }
+
   Future togglePause() async {
     if(isPlaying) {
       await audioPlayer.pause();
@@ -112,20 +120,14 @@ class _PlayerScreenState extends State<PlayerScreen> {
 
   Future stop() async {
     await audioPlayer.stop();
-    setState(() => playerState = PlayerState.stopped);
+    setState(() {
+      position = Duration();
+      playerState = PlayerState.stopped;
+    });
   }
 
   Future skipPrev() async {
-    if(prevCount < 1) {
-      await audioPlayer.stop();
-      setState(() {
-        playerState = PlayerState.stopped;
-      });
-      prevCount++;
-    } else {
-      print('go to prev song on playlist.....');
-      prevCount = 0;
-    }
+    print('go to prev song on playlist.....');
   }
 
   void skipNext() {
@@ -139,10 +141,10 @@ class _PlayerScreenState extends State<PlayerScreen> {
     });
   }
 
-  void onComplete() {
-    // todo impl onComplete (skip next, or stop)
-    stop();
-  }
+  void onComplete() {}
+
+  // for now, play the song as soon as the player is initialized
+  void onInitialized() => play();
 
   @override
   Widget build(BuildContext context) {
