@@ -27,7 +27,7 @@ class AddSongScreenState extends State<AddSongScreen> {
 
   Song newSong = Song();
 
-  _getDotList() {
+  _getDots() {
   final List<Widget> widgets = [];
   for(int i = 0; i < numberOfSteps; i++) {
   widgets.add(ColorDot(color: Colors.blue, isSelected: _index == i));
@@ -44,17 +44,21 @@ class AddSongScreenState extends State<AddSongScreen> {
 
   @override
   Widget build(BuildContext context) {
-    formList = [_buildFirstForm(), _buildSecondForm(), _buildThirdForm()];
     return Scaffold(
-      appBar: buildAppBar(context),
-      body: Column(
-        children: <Widget>[
-            _buildStepperDots(),
-            Padding(
-              padding: EdgeInsets.all(kDefaultPaddin),
-              child: formList[_index],
-            ),
-          ]
+      appBar: this._buildAppBar(),
+      body: Builder(
+          builder: (BuildContext navContext) {
+            formList = [_buildFirstForm(), _buildSecondForm(), _buildThirdForm(navContext)];
+            return Column(
+                children: <Widget>[
+                  _buildStepperDots(),
+                  Padding(
+                    padding: EdgeInsets.all(kDefaultPaddin),
+                    child: formList[_index],
+                  ),
+                ]
+            );
+          }
         )
       );
   }
@@ -74,7 +78,7 @@ class AddSongScreenState extends State<AddSongScreen> {
               if (value.isEmpty) {
                 return 'Please enter the title';
               } else {
-                newSong.title = value;
+                newSong.title = value.trim();
                 return null;
               }
             },
@@ -90,7 +94,7 @@ class AddSongScreenState extends State<AddSongScreen> {
                 if (value.isEmpty) {
                   return 'Please enter the artist';
                 } else {
-                  newSong.artist = value;
+                  newSong.artist = value.trim();
                   return null;
                 }
               },
@@ -116,7 +120,7 @@ class AddSongScreenState extends State<AddSongScreen> {
               if (value.isEmpty) {
                 return 'Please enter the album';
               } else {
-                newSong.album = value;
+                newSong.album = value.trim();
                 return null;
               }
             },
@@ -132,7 +136,7 @@ class AddSongScreenState extends State<AddSongScreen> {
                 if (value.isEmpty) {
                   return 'Please enter an url';
                 } else {
-                  newSong.albumImg = value;
+                  newSong.albumImg = value.trim();
                   return null;
                 }
               },
@@ -143,7 +147,7 @@ class AddSongScreenState extends State<AddSongScreen> {
     );
   }
 
-  _buildThirdForm() {
+  _buildThirdForm(BuildContext _context) {
     return Form(
       key: _formKeys[2],
       child: Column(
@@ -158,7 +162,7 @@ class AddSongScreenState extends State<AddSongScreen> {
               if (value.isEmpty) {
                 return 'Please enter the Youtube Url';
               } else {
-                newSong.youtubeUrl = value;
+                newSong.youtubeUrl = value.trim();
                 return null;
               }
             },
@@ -174,7 +178,7 @@ class AddSongScreenState extends State<AddSongScreen> {
                 if (value.isEmpty) {
                   return 'Please enter the filename';
                 } else {
-                  newSong.filename = value;
+                  newSong.filename = value.trim();
                   return null;
                 }
               },
@@ -192,7 +196,7 @@ class AddSongScreenState extends State<AddSongScreen> {
                       if(_formKeys[2].currentState.validate()) {
                         print(newSong.toJson());
                         Scaffold
-                            .of(context)
+                            .of(_context)
                             .showSnackBar(SnackBar(content: Text('Processing Data')));
                       }
                     },
@@ -207,6 +211,23 @@ class AddSongScreenState extends State<AddSongScreen> {
     );
   }
 
+  _buildAppBar() {
+    return AppBar(title: Text('My Music'), actions: <Widget>[
+      // overflow menu
+      PopupMenuButton<Object>(
+        onSelected: (value) {},
+        itemBuilder: (BuildContext context) {
+          var list = List<PopupMenuEntry<Object>>();
+          list.add(PopupMenuItem<Object>(
+            value: 1,
+            child: Text('Add New'),
+          ));
+          return list;
+        },
+      ),
+    ]);
+  }
+
   _buildStepperDots() {
     return Container(
         color: kGreyMenu,
@@ -215,35 +236,23 @@ class AddSongScreenState extends State<AddSongScreen> {
           crossAxisAlignment: CrossAxisAlignment.center,
           children: <Widget>[
             FlatButton(
-              onPressed: () {
-                if(_index > 0) {
-                  setState(() {
-                    _index--;
-                  });
-                }
-              },
+              onPressed: _index > 0 ? () => setState(() {_index--; }) : null,
               child: Row(
                 children: <Widget> [
-                  Icon(Icons.keyboard_arrow_left, color: kTextColor,),
-                  Text('Back'.toUpperCase(), style: TextStyle(color: kTextColor))
+                  Icon(Icons.keyboard_arrow_left, color: _index > 0 ? kTextColor : Colors.grey,),
+                  Text('Back'.toUpperCase(), style: TextStyle(color: _index > 0 ? kTextColor : Colors.grey),),
                 ],
               ),
             ),
             Row(
-              children: _getDotList(),
+              children: _getDots(),
             ),
             FlatButton(
-              onPressed: () {
-                if(_index <  formList.length -1) {
-                  setState(() {
-                    _validateForm(_formKeys[_index]);
-                  });
-                }
-              },
+              onPressed: _index <  _formKeys.length -1 ? () => setState(() { _validateForm(_formKeys[_index]); }) : null,
               child: Row(
                 children: <Widget> [
-                  Text('Next'.toUpperCase(), style: TextStyle(color: kTextColor),),
-                  Icon(Icons.keyboard_arrow_right, color: kTextColor,)
+                  Text('Next'.toUpperCase(), style: TextStyle(color: _index <  _formKeys.length -1 ? kTextColor : Colors.grey),),
+                  Icon(Icons.keyboard_arrow_right, color: _index <  _formKeys.length -1 ? kTextColor : Colors.grey,)
                 ],
               ),
             ),

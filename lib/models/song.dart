@@ -15,7 +15,7 @@ class Song {
   }
 
   String toJson() {
-    return "{ \"title\": " + this.title + ", \"artist\": " + "\"" + this.artist + "\"" + ", \"album\": " + "\"" + this.album + "\"" + ", \"album_img\": " + "\"" + this.albumImg + "\""
-        + ", \"filename\": " + "\"" + filename + "\"" + ", \"youtube_url\": " + "\"" + this.youtubeUrl + "\"" + "}";
+    return '{' + '"title":' + '"' + this.title + '"' + ',' + '"artist":' + '"' + this.artist + '"' + ',' + '"album":' + '"' + this.album + '"' + ',' + '"album_img":' + '"' + this.albumImg + '"'
+        + ',' + '"filename":' + '"' + filename + '"' + ',' + '"youtube_url":' + '"' + this.youtubeUrl + '"' + '}';
   }
 }

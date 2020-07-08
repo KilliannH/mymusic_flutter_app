@@ -5,6 +5,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:securedplayerflutterplugin/securedplayerflutterplugin.dart';
+import 'addSongScreen.dart';
 import 'constants.dart';
 import 'models/song.dart';
 
@@ -155,10 +156,31 @@ class _PlayerScreenState extends State<PlayerScreen> {
   // for now, play the song as soon as the player is initialized
   void _onInitialized() => play();
 
+  _buildAppBar(navContext) {
+    return AppBar(title: Text('My Music'), actions: <Widget>[
+      // overflow menu
+      PopupMenuButton<Object>(
+        onSelected: (value) {
+          if(value == 1) {
+            Navigator.push(navContext, MaterialPageRoute(builder: (context) => AddSongScreen()));
+          }
+        },
+        itemBuilder: (BuildContext context) {
+          var list = List<PopupMenuEntry<Object>>();
+          list.add(PopupMenuItem<Object>(
+            value: 1,
+            child: Text('Add New'),
+          ));
+          return list;
+        },
+      ),
+    ]);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: buildAppBar(context),
+      appBar: this._buildAppBar(context),
         body: Center(
             child: Column(children: <Widget>[
                 Padding(
