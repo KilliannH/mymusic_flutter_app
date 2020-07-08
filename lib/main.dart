@@ -43,8 +43,8 @@ class _MyAppState extends State<MyApp> {
         theme: ThemeData(
           // Define the default brightness and colors.
             brightness: Brightness.light,
-            primaryColor: Colors.blue,
-            accentColor: Colors.cyan,
+            primaryColor: Color(0xFF6002EE),
+            accentColor: Color(0xFF90EE02),
         ),
       home: Builder(
         builder: (navContext) => Scaffold(

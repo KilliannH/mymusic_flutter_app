@@ -1,15 +1,21 @@
 class Song {
 
-  final String id;
-  final String title;
-  final String artist;
-  final String album;
-  final String albumImg;
-  final String filename;
+  String id;
+  String title;
+  String artist;
+  String album;
+  String albumImg;
+  String filename;
+  String youtubeUrl;
 
-  Song(this.id, this.title, this.artist, this.album, this.albumImg, this.filename);
+  Song({this.id, this.title, this.artist, this.album, this.albumImg, this.filename});
 
   factory Song.fromJson(dynamic json) {
-    return Song(json['_id'] as String, json['title'] as String, json['artist'] as String, json['album'] as String, json['album_img'] as String, json['filename'] as String);
+    return Song(id: json['_id'] as String, title: json['title'] as String, artist: json['artist'] as String, album: json['album'] as String, albumImg: json['album_img'] as String, filename: json['filename'] as String);
+  }
+
+  String toJson() {
+    return "{ \"title\": " + this.title + ", \"artist\": " + "\"" + this.artist + "\"" + ", \"album\": " + "\"" + this.album + "\"" + ", \"album_img\": " + "\"" + this.albumImg + "\""
+        + ", \"filename\": " + "\"" + filename + "\"" + ", \"youtube_url\": " + "\"" + this.youtubeUrl + "\"" + "}";
   }
 }

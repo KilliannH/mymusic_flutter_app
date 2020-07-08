@@ -21,7 +21,13 @@ buildAppBar(navContext) {
         var list = List<PopupMenuEntry<Object>>();
         list.add(PopupMenuItem<Object>(
           value: 1,
-          child: Text('Add New'),
+          child:
+          Row(
+              children: <Widget> [
+                Icon(Icons.add, color: kTextColor,),
+                Text('Add Song', style: TextStyle(color: kTextColor),)
+              ],
+          ),
         ));
         return list;
       },
