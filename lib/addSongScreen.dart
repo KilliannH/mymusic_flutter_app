@@ -24,6 +24,8 @@ class AddSongScreenState extends State<AddSongScreen> {
   int _index = 0;
   int numberOfSteps = 3;
   var formList;
+  final PageController ctrl = PageController(initialPage: 0);
+  var width;
 
   Song newSong = Song();
 
@@ -36,6 +38,7 @@ class AddSongScreenState extends State<AddSongScreen> {
   }
 
   _validateForm(GlobalKey<FormState> formKey) {
+    print(ctrl.page);
     if(formKey.currentState.validate()) {
       _index ++;
     }
@@ -45,62 +48,82 @@ class AddSongScreenState extends State<AddSongScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: this._buildAppBar(),
+        resizeToAvoidBottomPadding: false,
+        appBar: this._buildAppBar(),
       body: Builder(
           builder: (BuildContext navContext) {
-            formList = [_buildFirstForm(), _buildSecondForm(), _buildThirdForm(navContext)];
-            return Column(
-                children: <Widget>[
-                  _buildStepperDots(),
-                  Padding(
-                    padding: EdgeInsets.all(kDefaultPaddin),
-                    child: formList[_index],
-                  ),
-                ]
-            );
+            width = MediaQuery.of(context).size.width;
+            return
+                  Column(
+                    children: <Widget>[
+                      Expanded(
+                        flex: 1,
+                        child: Container(width: width, child: _buildStepperDots()),
+                      ),
+                      Expanded(
+                        flex: 9,
+                        child: Container(
+                          width: width,
+                          child: PageView(
+                          physics: NeverScrollableScrollPhysics(),
+                          controller: ctrl,
+                          scrollDirection: Axis.horizontal,
+                          children: <Widget>[
+                            _buildFirstForm(),
+                            _buildSecondForm(),
+                            _buildThirdForm(navContext)
+                          ],
+            ),
+                        ),
+                      ),
+                    ]
+                  );
           }
         )
       );
   }
 
   _buildFirstForm() {
-    return Form(
-      key: _formKeys[0],
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: <Widget>[
-          TextFormField(
-            initialValue: newSong.title != null ? newSong.title : null,
-            decoration: const InputDecoration(
-              hintText: 'Title',
-            ),
-            validator: (value) {
-              if (value.isEmpty) {
-                return 'Please enter the title';
-              } else {
-                newSong.title = value.trim();
-                return null;
-              }
-            },
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 16.0),
-            child: TextFormField(
-              initialValue: newSong.artist != null ? newSong.artist : null,
+    return Container(
+      padding: EdgeInsets.all(kDefaultPaddin),
+      child: Form(
+        key: _formKeys[0],
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            TextFormField(
+              initialValue: newSong.title != null ? newSong.title : null,
               decoration: const InputDecoration(
-                hintText: 'Artist',
+                hintText: 'Title',
               ),
               validator: (value) {
                 if (value.isEmpty) {
-                  return 'Please enter the artist';
+                  return 'Please enter the title';
                 } else {
-                  newSong.artist = value.trim();
+                  newSong.title = value.trim();
                   return null;
                 }
               },
             ),
-          ),
-        ],
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 16.0),
+              child: TextFormField(
+                initialValue: newSong.artist != null ? newSong.artist : null,
+                decoration: const InputDecoration(
+                  hintText: 'Artist',
+                ),
+                validator: (value) {
+                  if (value.isEmpty) {
+                    return 'Please enter the artist';
+                  } else {
+                    newSong.artist = value.trim();
+                    return null;
+                  }
+                },
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
