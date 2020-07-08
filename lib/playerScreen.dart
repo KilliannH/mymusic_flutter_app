@@ -5,6 +5,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:securedplayerflutterplugin/securedplayerflutterplugin.dart';
+import 'constants.dart';
 import 'models/song.dart';
 
 class PlayerScreen extends StatefulWidget {
@@ -22,26 +23,21 @@ class PlayerScreen extends StatefulWidget {
 enum PlayerState { destroyed, initialized, stopped, playing, paused }
 
 class _PlayerScreenState extends State<PlayerScreen> {
-  Duration duration;
-  Duration position;
+  Duration _duration;
+  Duration _position;
 
   Map<String, dynamic> httpRequest;
 
-  SecuredPlayerFlutterPlugin audioPlayer;
+  SecuredPlayerFlutterPlugin _audioPlayer;
 
-  PlayerState playerState = PlayerState.destroyed;
+  PlayerState _playerState;
 
-  get isPlaying => playerState == PlayerState.playing;
-  get isPaused => playerState == PlayerState.paused;
+  get isPlaying => _playerState == PlayerState.playing;
+  get isPaused => _playerState == PlayerState.paused;
+  get _durationText => _duration?.toString()?.split('.')?.first ?? '';
+  get _positionText => _position?.toString()?.split('.')?.first ?? '';
 
-  get durationText =>
-      duration != null ? duration.toString().split('.').first : '';
-
-  get positionText =>
-      position != null ? position.toString().split('.').first : '';
-
-  StreamSubscription _positionSubscription;
-  StreamSubscription _audioPlayerStateSubscription;
+  _PlayerScreenState();
 
   @override
   void initState() {
@@ -51,35 +47,48 @@ class _PlayerScreenState extends State<PlayerScreen> {
 
   @override
   void dispose() {
-    _positionSubscription.cancel();
-    _audioPlayerStateSubscription.cancel();
-    audioPlayer.destroy();
+    _audioPlayer.destroy();
     super.dispose();
   }
 
   void initAudioPlayer() async {
-    audioPlayer = SecuredPlayerFlutterPlugin();
-    _positionSubscription = audioPlayer.onAudioPositionChanged
-        .listen((p) => setState(() => position = p));
-    _audioPlayerStateSubscription =
-        audioPlayer.onPlayerStateChanged.listen((s) {
-          if (s == SecuredAudioPlayerState.INITIALIZED) {
-            onInitialized();
-          } else if (s == SecuredAudioPlayerState.PLAYING) {
-            setState(() => duration = audioPlayer.duration);
-          }
-    }, onError: (msg) {
-      setState(() {
-        playerState = PlayerState.destroyed;
-        duration = Duration(seconds: 0);
-        position = Duration(seconds: 0);
-      });
+    _audioPlayer = SecuredPlayerFlutterPlugin();
+
+    _audioPlayer.durationHandler = (d) => setState(() {
+      _duration = d;
     });
+
+    _audioPlayer.positionHandler = (p) => setState(() {
+      _position = p;
+    });
+
+    _audioPlayer.completionHandler = () {
+      _onComplete();
+    };
+
+    _audioPlayer.initializedHandler = () {
+      _onInitialized();
+      _playerState = PlayerState.initialized;
+    };
+
+    _audioPlayer.destroyedHandler = () {
+      // impl what to do after player has been destroyed,
+      // create a new one with new song in it after a skipPrev, skipNext..
+    };
+
+    _audioPlayer.errorHandler = (msg) {
+      print('audioPlayer error : $msg');
+      setState(() {
+        _playerState = PlayerState.stopped;
+        _duration = new Duration(seconds: 0);
+        _position = new Duration(seconds: 0);
+      });
+    };
+
     httpRequest = await prepareUrl(widget.selectedSong.filename);
 
     // song plays when player is initialized
-    await audioPlayer.init(url: httpRequest['url'], apiKey: httpRequest['apiKey']);
-    playerState = PlayerState.initialized;
+    await _audioPlayer.init(url: httpRequest['url'], apiKey: httpRequest['apiKey']);
   }
 
   Future<Map<String, dynamic>> prepareUrl(String filename) async {
@@ -97,32 +106,32 @@ class _PlayerScreenState extends State<PlayerScreen> {
   }
 
   Future play() async {
-    await audioPlayer.play();
+    await _audioPlayer.play();
     setState(() {
-      playerState = PlayerState.playing;
+      _playerState = PlayerState.playing;
     });
   }
 
   Future pause() async {
-    await audioPlayer.pause();
-    setState(() => playerState = PlayerState.paused);
+    await _audioPlayer.pause();
+    setState(() => _playerState = PlayerState.paused);
   }
 
   Future togglePause() async {
     if(isPlaying) {
-      await audioPlayer.pause();
-      setState(() => playerState = PlayerState.paused);
+      await _audioPlayer.pause();
+      setState(() => _playerState = PlayerState.paused);
     } else {
-      await audioPlayer.play();
-      setState(() => playerState = PlayerState.playing);
+      await _audioPlayer.play();
+      setState(() => _playerState = PlayerState.playing);
     }
   }
 
   Future stop() async {
-    await audioPlayer.stop();
+    await _audioPlayer.stop();
     setState(() {
-      position = Duration();
-      playerState = PlayerState.stopped;
+      _position = Duration();
+      _playerState = PlayerState.stopped;
     });
   }
 
@@ -135,21 +144,21 @@ class _PlayerScreenState extends State<PlayerScreen> {
   }
 
   Future destroy() async {
-    await audioPlayer.destroy();
+    await _audioPlayer.destroy();
     setState(() {
-      playerState = PlayerState.destroyed;
+      _playerState = PlayerState.destroyed;
     });
   }
 
-  void onComplete() {}
+  void _onComplete() {}
 
   // for now, play the song as soon as the player is initialized
-  void onInitialized() => play();
+  void _onInitialized() => play();
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: this._buildAppBar(context),
+      appBar: buildAppBar(context),
         body: Center(
             child: Column(children: <Widget>[
                 Padding(
@@ -176,11 +185,18 @@ class _PlayerScreenState extends State<PlayerScreen> {
                   child: Stack(children: <Widget>[
                     Padding(
                       padding: EdgeInsets.only(top: 8),
-                      child: Slider(
-                          value: position?.inMilliseconds?.toDouble() ?? 0.0,
-                          onChanged: null,
-                          min: 0.0,
-                          max: duration?.inMilliseconds?.toDouble() ?? 0.0
+                      child:  Slider(
+                        onChanged: (v) {
+                          final position = v * _duration.inMilliseconds;
+                          _audioPlayer
+                              .seek(Duration(milliseconds: position.round()));
+                        },
+                        value: (_position != null &&
+                            _duration != null &&
+                            _position.inMilliseconds > 0 &&
+                            _position.inMilliseconds < _duration.inMilliseconds)
+                            ? _position.inMilliseconds / _duration.inMilliseconds
+                            : 0.0,
                       ),
                     ),
                     Padding(
@@ -189,12 +205,12 @@ class _PlayerScreenState extends State<PlayerScreen> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: <Widget>[
                           Text(
-                          position != null
-                              ? positionText : '',
+                          _position != null
+                              ? _positionText : '',
                           style: TextStyle(fontSize: 16.0),
                           ),
                           Text(
-                            duration != null ? durationText : '',
+                            _duration != null ? _durationText : '',
                             style: TextStyle(fontSize: 16.0),
                           )
                         ],
@@ -238,20 +254,4 @@ class _PlayerScreenState extends State<PlayerScreen> {
     );
   }
 
-  _buildAppBar(navContext) {
-    return AppBar(title: Text('My Music'), actions: <Widget> [
-      // overflow menu
-      PopupMenuButton<Object>(
-        onSelected: (value) {},
-        itemBuilder: (BuildContext context) {
-          var list = List<PopupMenuEntry<Object>>();
-          list.add(PopupMenuItem<Object>(
-            value: 1,
-            child: Text('Add New'),
-          ));
-          return list;
-        },
-      ),
-    ]);
-  }
 }

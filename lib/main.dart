@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:mymusicflutterapp/services/dataService.dart';
 import 'package:mymusicflutterapp/songItem.dart';
 import 'package:mymusicflutterapp/playerScreen.dart';
+
+import 'constants.dart';
 // By convention : first import block for all packages, second import for our own files.
 
 void main() {
@@ -38,9 +40,15 @@ class _MyAppState extends State<MyApp> {
     // build method always responsible to return a new Widget.
 
     return MaterialApp(
+        theme: ThemeData(
+          // Define the default brightness and colors.
+            brightness: Brightness.light,
+            primaryColor: Colors.blue,
+            accentColor: Colors.cyan,
+        ),
       home: Builder(
         builder: (navContext) => Scaffold(
-          appBar: this._buildAppBar(navContext),
+          appBar: buildAppBar(navContext),
           body: FutureBuilder<dynamic>(
             future: DataService.getSongs(),
             // a previously-obtained Future<dynamic> or null
@@ -86,23 +94,6 @@ class _MyAppState extends State<MyApp> {
         ),
       ),
     );
-  }
-
-  _buildAppBar(navContext) {
-    return AppBar(title: Text('My Music'), actions: <Widget>[
-      // overflow menu
-      PopupMenuButton<Object>(
-        onSelected: (value) {},
-        itemBuilder: (BuildContext context) {
-          var list = List<PopupMenuEntry<Object>>();
-          list.add(PopupMenuItem<Object>(
-            value: 1,
-            child: Text('Add New'),
-          ));
-          return list;
-        },
-      ),
-    ]);
   }
 
   _buildSongList(songs, context) {
