@@ -5,6 +5,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
+import 'package:mymusicflutterapp/services/dataService.dart';
 import 'package:securedplayerflutterplugin/securedplayerflutterplugin.dart';
 import 'constants.dart';
 import 'models/song.dart';
@@ -39,7 +40,6 @@ class AddSongScreenState extends State<AddSongScreen> {
     if(formKey.currentState.validate()) {
       _index ++;
     }
-    print(newSong.title);
   }
 
   @override
@@ -194,10 +194,13 @@ class AddSongScreenState extends State<AddSongScreen> {
                     onPressed: () {
                       // handle empty textInputs validation
                       if(_formKeys[2].currentState.validate()) {
-                        print(newSong.toJson());
+                        print(jsonEncode(<String, String>
+                        {'title': newSong.title, 'artist': newSong.artist, 'album': newSong.album,
+                          'album_url': newSong.albumImg, 'filename': newSong.filename, 'youtube_url': newSong.youtubeUrl}).toString());
                         Scaffold
                             .of(_context)
                             .showSnackBar(SnackBar(content: Text('Processing Data')));
+                        DataService.postSong(newSong).then((value) => print(value.statusCode + '\n' + value.body.toString())/* successfully added song...  after a spinner*/);
                       }
                     },
                     child: Text('Submit'.toUpperCase()),
