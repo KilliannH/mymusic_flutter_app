@@ -24,7 +24,7 @@ class AddSongScreenState extends State<AddSongScreen> {
 
   int _index = 0;
   int numberOfSteps = 3;
-  var formList;
+  var buildList;
 
   Song newSong = Song();
 
@@ -42,21 +42,37 @@ class AddSongScreenState extends State<AddSongScreen> {
     }
   }
 
+  _buildTopColumn(index, buildList) {
+    final List<Widget> widgets = [];
+    if(index != 3) {
+      widgets.add(_buildStepperDots());
+      widgets.add(
+          Padding(
+              padding: EdgeInsets.all(kDefaultPaddin),
+              child: buildList[index]
+          )
+      );
+    } else {
+      widgets.add(
+          Padding(
+              padding: EdgeInsets.zero,
+              child: buildList[index]
+          )
+      );
+    }
+    return widgets;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: this._buildAppBar(),
       body: Builder(
           builder: (BuildContext navContext) {
-            formList = [_buildFirstForm(), _buildSecondForm(), _buildThirdForm(navContext)];
+            // todo change this.
+            buildList = [_buildFirstForm(), _buildSecondForm(), _buildThirdForm(navContext), _buildLoadingState()];
             return Column(
-                children: <Widget>[
-                  _buildStepperDots(),
-                  Padding(
-                    padding: EdgeInsets.all(kDefaultPaddin),
-                    child: formList[_index],
-                  ),
-                ]
+                children: _buildTopColumn(_index, buildList),
             );
           }
         )
@@ -103,6 +119,24 @@ class AddSongScreenState extends State<AddSongScreen> {
         ],
       ),
     );
+  }
+
+  _buildLoadingState() {
+    return Center(
+        child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: <Widget>[
+              SizedBox(
+                child: CircularProgressIndicator(),
+                width: 60,
+                height: 60,
+              ),
+              const Padding(
+                padding: EdgeInsets.only(top: 16),
+                child: Text('Awaiting result...'),
+              )
+            ]));
   }
 
   _buildSecondForm() {
@@ -194,13 +228,20 @@ class AddSongScreenState extends State<AddSongScreen> {
                     onPressed: () {
                       // handle empty textInputs validation
                       if(_formKeys[2].currentState.validate()) {
-                        print(jsonEncode(<String, String>
-                        {'title': newSong.title, 'artist': newSong.artist, 'album': newSong.album,
-                          'album_url': newSong.albumImg, 'filename': newSong.filename, 'youtube_url': newSong.youtubeUrl}).toString());
-                        Scaffold
-                            .of(_context)
-                            .showSnackBar(SnackBar(content: Text('Processing Data')));
-                        DataService.postSong(newSong).then((value) => print(value.statusCode + '\n' + value.body.toString())/* successfully added song...  after a spinner*/);
+                        setState(() {
+                          _index = 3;
+                        });
+                        DataService.postSong(newSong).then((response) {
+                          if(response.statusCode == 200) {
+                            setState(() {
+                              newSong = Song();
+                              _index = 0;
+                            });
+                            Scaffold
+                                .of(_context)
+                                .showSnackBar(SnackBar(content: Text('Song added successfully!')));
+                          }
+                        }/* successfully added song...  after a spinner*/);
                       }
                     },
                     child: Text('Submit'.toUpperCase()),
@@ -233,7 +274,7 @@ class AddSongScreenState extends State<AddSongScreen> {
 
   _buildStepperDots() {
     return Container(
-        color: kGreyMenu,
+        color: Colors.transparent,
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           crossAxisAlignment: CrossAxisAlignment.center,

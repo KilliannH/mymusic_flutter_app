@@ -47,7 +47,7 @@ class DataService {
           'Content-Type': 'application/json'
         }, body: jsonEncode(<String, String>
         {'title': song.title, 'artist': song.artist, 'album': song.album,
-        'album_url': song.albumImg, 'filename': song.filename, 'youtube_url': song.youtubeUrl}));
+        'album_img': song.albumImg, 'filename': song.filename, 'youtube_url': song.youtubeUrl}));
 
     return response;
   }
