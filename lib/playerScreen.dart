@@ -151,7 +151,9 @@ class _PlayerScreenState extends State<PlayerScreen> {
     });
   }
 
-  void _onComplete() {}
+  void _onComplete() {
+    stop();
+  }
 
   // for now, play the song as soon as the player is initialized
   void _onInitialized() => play();
