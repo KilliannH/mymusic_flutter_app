@@ -8,7 +8,10 @@ class Song {
   String filename;
   String youtubeUrl;
 
-  Song({this.id, this.title, this.artist, this.album, this.albumImg, this.filename});
+  bool isFavorite;
+  int order;
+
+  Song({this.id, this.title, this.artist, this.album, this.albumImg, this.filename, this.isFavorite = false});
 
   factory Song.fromJson(dynamic json) {
     return Song(id: json['_id'] as String, title: json['title'] as String, artist: json['artist'] as String, album: json['album'] as String, albumImg: json['album_img'] as String, filename: json['filename'] as String);

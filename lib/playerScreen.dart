@@ -24,12 +24,17 @@ class PlayerScreen extends StatefulWidget {
 enum PlayerState { destroyed, initialized, stopped, playing, paused }
 
 class _PlayerScreenState extends State<PlayerScreen> {
+
+  Song currentSong;
+
   Duration _duration;
   Duration _position;
 
   Map<String, dynamic> httpRequest;
 
   SecuredPlayerFlutterPlugin _audioPlayer;
+
+  bool _loadingState = true;
 
   PlayerState _playerState;
 
@@ -42,6 +47,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
 
   @override
   void initState() {
+    currentSong = widget.selectedSong;
     super.initState();
     initAudioPlayer();
   }
@@ -86,7 +92,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
       });
     };
 
-    httpRequest = await prepareUrl(widget.selectedSong.filename);
+    httpRequest = await prepareUrl(currentSong.filename);
 
     // song plays when player is initialized
     await _audioPlayer.init(url: httpRequest['url'], apiKey: httpRequest['apiKey']);
@@ -137,12 +143,33 @@ class _PlayerScreenState extends State<PlayerScreen> {
   }
 
   Future skipPrev() async {
+
+    // todo -- handle stop
+    for(int i = 0; i < widget.songList.length; i++) {
+      if (currentSong.order == widget.songList[i].order) {
+        _loadingState = true;
+        _audioPlayer.destroy();
+        setState(() {
+          currentSong = widget.songList[i - 1];
+          initAudioPlayer();
+        });
+      }
+    }
     print('go to prev song on playlist.....');
+
   }
 
   void skipNext() {
     print('go to next song on playlist......');
   }
+
+  void _handleFavorite() {
+    setState(() {
+      this.currentSong.isFavorite = !this.currentSong.isFavorite;
+    });
+  }
+
+  void _handleRepeat() {}
 
   Future destroy() async {
     await _audioPlayer.destroy();
@@ -156,7 +183,10 @@ class _PlayerScreenState extends State<PlayerScreen> {
   }
 
   // for now, play the song as soon as the player is initialized
-  void _onInitialized() => play();
+  void _onInitialized() {
+    _loadingState = false;
+    play();
+  }
 
   _buildAppBar(navContext) {
     return AppBar(title: Text('My Music'), actions: <Widget>[
@@ -183,27 +213,24 @@ class _PlayerScreenState extends State<PlayerScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: this._buildAppBar(context),
-        body: Center(
+        body: _loadingState ? showLoading() : Center(
             child: Column(children: <Widget>[
-                Padding(
-                  padding: EdgeInsets.only(top: 35),
-                  child: Image(
-                      image: NetworkImage(widget.selectedSong.albumImg),
-                      width: 300,
-                      height: 300),
-                ),
-                Padding(
-                    padding: EdgeInsets.only(top: 24),
-                    child: Text(
-                      widget.selectedSong.artist.toUpperCase(),
-                      style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
-                    )),
               Padding(
-                  padding: EdgeInsets.only(top: 0),
-                  child: Text(
-                    widget.selectedSong.title,
-                    style: TextStyle(fontSize: 18),
-                  )),
+                  padding: EdgeInsets.only(top: 28, bottom: 8),
+                  child:Text(currentSong.title, style: TextStyle(fontSize: 24),)
+              ),
+              Padding(
+                  padding: EdgeInsets.only(bottom: 30),
+                  child: Text(currentSong.artist, style: TextStyle(fontSize: 18),)
+              ),
+              Padding(
+                padding: EdgeInsets.only(bottom: 24),
+                child: Image(image: NetworkImage(
+                    currentSong.albumImg),
+                    width: 300,
+                    height: 300
+                ),
+              ),
                 Padding(
                   padding: EdgeInsets.only(top: 18),
                   child: Stack(children: <Widget>[
@@ -243,33 +270,46 @@ class _PlayerScreenState extends State<PlayerScreen> {
                   ],)
                 ),
               Padding(
-                padding: EdgeInsets.only(bottom :0),
+                padding: EdgeInsets.only(top: 6),
                 child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: <Widget>[
+                    Spacer(),
+                    IconButton(
+                        iconSize: 28,
+                        color: currentSong.isFavorite ? Theme.of(context).primaryColor : Colors.black,
+                        icon: currentSong.isFavorite ? Icon(Icons.favorite) : Icon(Icons.favorite_border),
+                        onPressed: () {
+                          _handleFavorite();
+                        }
+                    ),
+                    Spacer(),
                     IconButton(
                         iconSize: 32,
                         icon: Icon(Icons.skip_previous),
-                        onPressed: () {
-                          skipPrev();
-                        }
+                        onPressed: () => skipPrev()
                     ),
                     IconButton(
                         iconSize: 32,
                         icon: isPlaying ? Icon(Icons.pause) : Icon(Icons.play_arrow),
                         onPressed: () {
-                          setState(() {
-                            togglePause();
-                          });
+                          setState(() => togglePause());
                         }
                     ),
                     IconButton(
                         iconSize: 32,
                         icon: Icon(Icons.skip_next),
+                        onPressed: () => skipNext()
+                    ),
+                    Spacer(),
+                    IconButton(
+                        iconSize: 28,
+                        icon: Icon(Icons.repeat),
                         onPressed: () {
-                          skipNext();
+                          _handleRepeat();
                         }
-                    )
+                    ),
+                    Spacer()
                   ],
                 ),
               )

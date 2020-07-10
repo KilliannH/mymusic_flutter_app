@@ -46,6 +46,7 @@ class _MyAppState extends State<MyApp> {
             brightness: Brightness.light,
             primaryColor: Color(0xFF6002EE),
             accentColor: Color(0xFF90EE02),
+            errorColor: Colors.red
         ),
       home: Builder(
         builder: (navContext) => Scaffold(
@@ -65,7 +66,7 @@ class _MyAppState extends State<MyApp> {
                         children: <Widget>[
                           Icon(
                             Icons.error_outline,
-                            color: Colors.red,
+                            color: Theme.of(context).errorColor,
                             size: 60,
                           ),
                           Padding(
@@ -74,21 +75,7 @@ class _MyAppState extends State<MyApp> {
                           )
                         ]));
               } else {
-                return Center(
-                    child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: <Widget>[
-                          SizedBox(
-                            child: CircularProgressIndicator(),
-                            width: 60,
-                            height: 60,
-                          ),
-                          const Padding(
-                            padding: EdgeInsets.only(top: 16),
-                            child: Text('Awaiting result...'),
-                          )
-                        ]));
+                return showLoading();
               }
             },
           ),

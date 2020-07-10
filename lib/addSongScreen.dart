@@ -22,9 +22,10 @@ class AddSongScreen extends StatefulWidget {
 class AddSongScreenState extends State<AddSongScreen> {
   final _formKeys = [GlobalKey<FormState>(), GlobalKey<FormState>(), GlobalKey<FormState>()];
 
+  bool _loadingState = false;
   int _index = 0;
   int numberOfSteps = 3;
-  var buildList;
+  var formList;
 
   Song newSong = Song();
 
@@ -42,27 +43,6 @@ class AddSongScreenState extends State<AddSongScreen> {
     }
   }
 
-  _buildTopColumn(index, buildList) {
-    final List<Widget> widgets = [];
-    if(index != 3) {
-      widgets.add(_buildStepperDots());
-      widgets.add(
-          Padding(
-              padding: EdgeInsets.all(kDefaultPaddin),
-              child: buildList[index]
-          )
-      );
-    } else {
-      widgets.add(
-          Padding(
-              padding: EdgeInsets.zero,
-              child: buildList[index]
-          )
-      );
-    }
-    return widgets;
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -70,10 +50,12 @@ class AddSongScreenState extends State<AddSongScreen> {
       body: Builder(
           builder: (BuildContext navContext) {
             // todo change this.
-            buildList = [_buildFirstForm(), _buildSecondForm(), _buildThirdForm(navContext), _buildLoadingState()];
-            return Column(
-                children: _buildTopColumn(_index, buildList),
-            );
+            formList = [_buildFirstForm(), _buildSecondForm(), _buildThirdForm(navContext)];
+            return _loadingState ? showLoading() : Column(
+                children: [
+                  _buildStepperDots(),
+                  formList(_index)
+            ]);
           }
         )
       );
@@ -119,24 +101,6 @@ class AddSongScreenState extends State<AddSongScreen> {
         ],
       ),
     );
-  }
-
-  _buildLoadingState() {
-    return Center(
-        child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: <Widget>[
-              SizedBox(
-                child: CircularProgressIndicator(),
-                width: 60,
-                height: 60,
-              ),
-              const Padding(
-                padding: EdgeInsets.only(top: 16),
-                child: Text('Awaiting result...'),
-              )
-            ]));
   }
 
   _buildSecondForm() {
@@ -229,13 +193,14 @@ class AddSongScreenState extends State<AddSongScreen> {
                       // handle empty textInputs validation
                       if(_formKeys[2].currentState.validate()) {
                         setState(() {
-                          _index = 3;
+                          _loadingState = true;
                         });
                         DataService.postSong(newSong).then((response) {
                           if(response.statusCode == 200) {
                             setState(() {
                               newSong = Song();
                               _index = 0;
+                              _loadingState = false;
                             });
                             Scaffold
                                 .of(_context)

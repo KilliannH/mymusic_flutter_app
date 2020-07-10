@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:mymusicflutterapp/models/song.dart';
+import 'package:mymusicflutterapp/playlist.dart';
 
 class DataService {
 
@@ -27,7 +28,13 @@ class DataService {
 
     var songsJson = jsonDecode(response.body) as List;
 
-    List<Song> songList = songsJson.map((songJson) => Song.fromJson(songJson)).toList();
+    var order = 1;
+    List<Song> songList = songsJson.map((songJson) {
+      Song song = Song.fromJson(songJson);
+      song.order = order;
+      order++;
+      return song;
+    }).toList();
 
     return songList;
   }
