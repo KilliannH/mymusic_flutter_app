@@ -1,10 +1,12 @@
+import 'dart:collection';
 import 'dart:convert';
 import 'dart:io';
 
 import 'package:http/http.dart' as http;
 import 'package:flutter/services.dart' show rootBundle;
-import 'package:mymusicflutterapp/models/song.dart';
-import 'package:mymusicflutterapp/playlist.dart';
+import 'package:mymusicflutterapp/models/Album.dart';
+import 'package:mymusicflutterapp/models/Artist.dart';
+import 'package:mymusicflutterapp/models/Song.dart';
 
 class DataService {
 
@@ -12,27 +14,37 @@ class DataService {
     return await rootBundle.loadString('assets/config.json');
   }
 
-  static Future<List<Song>> getSongs() async {
+  static Future<List<Song>> getSongs(Map<String, int> limit) async {
     var value = await loadAsset();
 
     var config = jsonDecode(value);
     var client = http.Client();
 
     String apiUrl = '${config['protocol']}://${config['api_host']}:${config['api_port']}/${config['api_endpoint']}';
-    String apiKey = config['apiKey'];
+    String apiKey = config['api_key'];
 
-    var response = await client.get(Uri.parse(apiUrl + '/songs'),
+    var response = await client.get(Uri.parse(apiUrl + '/songs/limit' + '?start=' + limit['start'].toString() + '&end=' + limit['end'].toString()),
         headers: {
           HttpHeaders.authorizationHeader: apiKey
         });
 
-    var songsJson = jsonDecode(response.body) as List;
+    // in pageable json you get things like total number of songs, etc
+    Map pageableJson = jsonDecode(response.body);
+    var songsJson = pageableJson['content'] as List;
 
-    var order = 1;
+    // here we make relations only for song side bcs we only need songList in the UI
+    // if we ever want an album list or an artist list we would provide relations on those too.
     List<Song> songList = songsJson.map((songJson) {
       Song song = Song.fromJson(songJson);
-      song.order = order;
-      order++;
+      Album album = Album.fromJson(songJson['album']);
+
+      // initiate artists list bcs it's not done when a new song instance is created
+      song.artists = new List<Artist>();
+      songJson['artists'].forEach((artistJson) {
+        Artist artist = new Artist.fromJson(artistJson);
+        song.artists.add(artist);
+      });
+      song.album = album;
       return song;
     }).toList();
 
@@ -53,8 +65,7 @@ class DataService {
           HttpHeaders.authorizationHeader: apiKey,
           'Content-Type': 'application/json'
         }, body: jsonEncode(<String, String>
-        {'title': song.title, 'artist': song.artist, 'album': song.album,
-        'album_img': song.albumImg, 'filename': song.filename, 'youtube_url': song.youtubeUrl}));
+        {'title': song.title, 'filename': song.filename}));
 
     return response;
   }

@@ -5,9 +5,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:securedplayerflutterplugin/securedplayerflutterplugin.dart';
-import 'addSongScreen.dart';
 import 'constants.dart';
-import 'models/song.dart';
+import 'models/Song.dart';
 
 class PlayerScreen extends StatefulWidget {
   @override
@@ -145,7 +144,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
   Future skipPrev() async {
 
     // todo -- handle stop
-    for(int i = 0; i < widget.songList.length; i++) {
+    /*for(int i = 0; i < widget.songList.length; i++) {
       if (currentSong.order == widget.songList[i].order) {
         _loadingState = true;
         _audioPlayer.destroy();
@@ -154,7 +153,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
           initAudioPlayer();
         });
       }
-    }
+    }*/
     print('go to prev song on playlist.....');
 
   }
@@ -164,9 +163,11 @@ class _PlayerScreenState extends State<PlayerScreen> {
   }
 
   void _handleFavorite() {
+    /*
     setState(() {
       this.currentSong.isFavorite = !this.currentSong.isFavorite;
     });
+    */
   }
 
   void _handleRepeat() {}
@@ -194,7 +195,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
       PopupMenuButton<Object>(
         onSelected: (value) {
           if(value == 1) {
-            Navigator.push(navContext, MaterialPageRoute(builder: (context) => AddSongScreen()));
+            // Navigator.push(navContext, MaterialPageRoute(builder: (context) => AddSongScreen()));
           }
         },
         itemBuilder: (BuildContext context) {
@@ -221,12 +222,12 @@ class _PlayerScreenState extends State<PlayerScreen> {
               ),
               Padding(
                   padding: EdgeInsets.only(bottom: 30),
-                  child: Text(currentSong.artist, style: TextStyle(fontSize: 18),)
+                  child: Text(currentSong.artists.toString(), style: TextStyle(fontSize: 18),)
               ),
               Padding(
                 padding: EdgeInsets.only(bottom: 24),
                 child: Image(image: NetworkImage(
-                    currentSong.albumImg),
+                    currentSong.album.imageUrl),
                     width: 300,
                     height: 300
                 ),
@@ -274,7 +275,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: <Widget>[
-                    Spacer(),
+                    /*Spacer(),
                     IconButton(
                         iconSize: 28,
                         color: currentSong.isFavorite ? Theme.of(context).primaryColor : Colors.black,
@@ -282,7 +283,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
                         onPressed: () {
                           _handleFavorite();
                         }
-                    ),
+                    ),*/
                     Spacer(),
                     IconButton(
                         iconSize: 32,

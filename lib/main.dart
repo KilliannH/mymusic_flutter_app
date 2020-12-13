@@ -3,7 +3,6 @@ import 'package:mymusicflutterapp/services/dataService.dart';
 import 'package:mymusicflutterapp/songItem.dart';
 import 'package:mymusicflutterapp/playerScreen.dart';
 
-import 'addSongScreen.dart';
 import 'constants.dart';
 // By convention : first import block for all packages, second import for our own files.
 
@@ -35,6 +34,7 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   final List<String> appRoutes = const ['Albums', 'Artists', 'Add'];
+  final limit = { 'start': 0, 'end': 30 };
 
   @override
   Widget build(BuildContext context) {
@@ -52,7 +52,7 @@ class _MyAppState extends State<MyApp> {
         builder: (navContext) => Scaffold(
           appBar: this._buildAppBar(navContext),
           body: FutureBuilder<dynamic>(
-            future: DataService.getSongs(),
+            future: DataService.getSongs(limit),
             // a previously-obtained Future<dynamic> or null
             builder: (BuildContext context, AsyncSnapshot<dynamic> snapshot) {
               if (snapshot.hasData) {
@@ -90,7 +90,7 @@ class _MyAppState extends State<MyApp> {
       PopupMenuButton<Object>(
         onSelected: (value) {
           if(value == 1) {
-          Navigator.push(navContext, MaterialPageRoute(builder: (context) => AddSongScreen()));
+          // Navigator.push(navContext, MaterialPageRoute(builder: (context) => AddSongScreen()));
           }
         },
         itemBuilder: (BuildContext context) {
@@ -114,8 +114,8 @@ class _MyAppState extends State<MyApp> {
         return InkWell(
             child: Container(
               height: 70,
-              child: SongItem(songs[index].title, songs[index].artist,
-                  songs[index].albumImg),
+              child: SongItem(songs[index].title, songs[index].artists,
+                  songs[index].album),
             ),
             onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => PlayerScreen(songs[index], songs)))
         );

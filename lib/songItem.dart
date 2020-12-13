@@ -1,20 +1,22 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/painting.dart';
+import 'package:mymusicflutterapp/models/Album.dart';
+import 'package:mymusicflutterapp/models/Artist.dart';
 
 class SongItem extends StatelessWidget {
   final String songTitle;
-  final String songArtist;
-  final String songAlbumImg;
+  final List<Artist> songArtists;
+  final Album songAlbum;
 
-  SongItem(this.songTitle, this.songArtist, this.songAlbumImg);
+  SongItem(this.songTitle, this.songArtists, this.songAlbum);
 
   @override
   Widget build(BuildContext context) {
     return new Row(
       children: <Widget>[
         Image(
-          image: NetworkImage(this.songAlbumImg),
+          image: NetworkImage(this.songAlbum.imageUrl),
           fit: BoxFit.contain,
         ),
         Container(
@@ -28,7 +30,7 @@ class SongItem extends StatelessWidget {
                 style: TextStyle(fontSize: 18),
               ),
               Text(
-                songArtist,
+                _concatArtists(this.songArtists),
               ),
             ],
           ),
@@ -36,5 +38,19 @@ class SongItem extends StatelessWidget {
       ],
 
     );
+  }
+
+  _concatArtists(List<Artist> artists) {
+    var text = "";
+    var index = 0;
+    artists.forEach((artist) {
+      if (index < artists.length -1) {
+        text += artist.name + ", ";
+      } else {
+        text += artist.name;
+      }
+      index++;
+    });
+    return text;
   }
 }
