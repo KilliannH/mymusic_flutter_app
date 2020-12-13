@@ -20,7 +20,6 @@ class Artist {
   }
 
   factory Artist.fromJson(dynamic json) {
-    print('' + json['id'].toString() + ' ' + json['name'] + ' ' + json['imageUrl']);
     return Artist(id: json['id'] as int, name: json['name'] as String, imageUrl: json['imageUrl'] as String);
   }
 

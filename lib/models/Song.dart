@@ -10,6 +10,8 @@ class Song {
   List<Artist> artists;
   String filename;
 
+  int order;
+
   Song({this.id, this.title, this.filename});
 
   factory Song.fromJson(dynamic json) {

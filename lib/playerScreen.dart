@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:securedplayerflutterplugin/securedplayerflutterplugin.dart';
 import 'constants.dart';
+import 'models/Artist.dart';
 import 'models/Song.dart';
 
 class PlayerScreen extends StatefulWidget {
@@ -94,7 +95,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
     httpRequest = await prepareUrl(currentSong.filename);
 
     // song plays when player is initialized
-    await _audioPlayer.init(url: httpRequest['url'], apiKey: httpRequest['apiKey']);
+    await _audioPlayer.init(url: httpRequest['url'], apiKey: httpRequest['api_key']);
   }
 
   Future<Map<String, dynamic>> prepareUrl(String filename) async {
@@ -104,10 +105,10 @@ class _PlayerScreenState extends State<PlayerScreen> {
 
     return {
       'url':
-          '${config['protocol']}://${config['api_host']}:${config['api_port']}/${config['api_endpoint']}' +
+          '${config['protocol']}://${config['api_host']}:${config['api_port']}' +
               '/stream/' +
               filename,
-      'apiKey': config['apiKey']
+      'api_key': config['api_key']
     };
   }
 
@@ -144,7 +145,14 @@ class _PlayerScreenState extends State<PlayerScreen> {
   Future skipPrev() async {
 
     // todo -- handle stop
-    /*for(int i = 0; i < widget.songList.length; i++) {
+    // check if clicked > 5 sec played -> stop
+    // clicked < 5sec played skip prev (if prev avaliable)
+    // 4 sec played + pause state -> skip prev
+    // 5+ sec played + pause state -> stop + play()
+    //check if clicked on paused :
+
+
+    for(int i = 0; i < widget.songList.length; i++) {
       if (currentSong.order == widget.songList[i].order) {
         _loadingState = true;
         _audioPlayer.destroy();
@@ -153,7 +161,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
           initAudioPlayer();
         });
       }
-    }*/
+    }
     print('go to prev song on playlist.....');
 
   }
@@ -222,7 +230,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
               ),
               Padding(
                   padding: EdgeInsets.only(bottom: 30),
-                  child: Text(currentSong.artists.toString(), style: TextStyle(fontSize: 18),)
+                  child: Text(_concatArtists(currentSong.artists), style: TextStyle(fontSize: 18),)
               ),
               Padding(
                 padding: EdgeInsets.only(bottom: 24),
@@ -275,15 +283,14 @@ class _PlayerScreenState extends State<PlayerScreen> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: <Widget>[
-                    /*Spacer(),
+                    Spacer(),
                     IconButton(
                         iconSize: 28,
-                        color: currentSong.isFavorite ? Theme.of(context).primaryColor : Colors.black,
-                        icon: currentSong.isFavorite ? Icon(Icons.favorite) : Icon(Icons.favorite_border),
+                        icon: Icon(Icons.favorite_border),
                         onPressed: () {
                           _handleFavorite();
                         }
-                    ),*/
+                    ),
                     Spacer(),
                     IconButton(
                         iconSize: 32,
@@ -319,4 +326,17 @@ class _PlayerScreenState extends State<PlayerScreen> {
     );
   }
 
+  _concatArtists(List<Artist> artists) {
+    var text = "";
+    var index = 0;
+    artists.forEach((artist) {
+      if (index < artists.length -1) {
+        text += artist.name + ", ";
+      } else {
+        text += artist.name;
+      }
+      index++;
+    });
+    return text;
+  }
 }

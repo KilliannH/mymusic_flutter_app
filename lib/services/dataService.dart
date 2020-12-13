@@ -20,6 +20,8 @@ class DataService {
     var config = jsonDecode(value);
     var client = http.Client();
 
+    int order = 1;
+
     String apiUrl = '${config['protocol']}://${config['api_host']}:${config['api_port']}/${config['api_endpoint']}';
     String apiKey = config['api_key'];
 
@@ -45,6 +47,8 @@ class DataService {
         song.artists.add(artist);
       });
       song.album = album;
+      song.order = order;
+      order++;
       return song;
     }).toList();
 
