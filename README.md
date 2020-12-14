@@ -1,8 +1,8 @@
 # mymusicflutterapp
 
 todo -- v1.0
-handle stop
-skipPrev(), skipNext()
+handle stop : done
+skipPrev(), skipNext() : done
 handle repeat one, all
 handle playlist
 - favorite playlist

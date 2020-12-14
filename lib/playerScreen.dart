@@ -143,30 +143,47 @@ class _PlayerScreenState extends State<PlayerScreen> {
   }
 
   Future skipPrev() async {
+    PlayerState _lastPlayerState = _playerState;
+    if(_position.inSeconds > 4) {
+      pause();
+      if(_lastPlayerState == PlayerState.playing) {
+        _audioPlayer.seek(Duration());
+        return play();
+      } else {
+        _audioPlayer.seek(Duration());
+      }
+    } else {
+      if (currentSong.order > 1) {
+        for (int i = 0; i < widget.songList.length; i++) {
+          if (currentSong.id == widget.songList[i].id) {
+            _loadingState = true;
+            _audioPlayer.destroy();
+            return setState(() {
+              currentSong = widget.songList[i - 1];
+              initAudioPlayer();
+            });
+          }
+        }
+        print('go to prev song on playlist.....');
+      } else {
+        pause();
+        _audioPlayer.seek(Duration());
+        play();
+      }
+    }
+  }
 
-    // todo -- handle stop
-    // check if clicked > 5 sec played -> stop
-    // clicked < 5sec played skip prev (if prev avaliable)
-    // 4 sec played + pause state -> skip prev
-    // 5+ sec played + pause state -> stop + play()
-    //check if clicked on paused :
-
-
-    for(int i = 0; i < widget.songList.length; i++) {
-      if (currentSong.order == widget.songList[i].order) {
+  void skipNext() {
+    for (int i = 0; i < widget.songList.length; i++) {
+      if (currentSong.id == widget.songList[i].id) {
         _loadingState = true;
         _audioPlayer.destroy();
-        setState(() {
-          currentSong = widget.songList[i - 1];
+        return setState(() {
+          currentSong = widget.songList[i + 1];
           initAudioPlayer();
         });
       }
     }
-    print('go to prev song on playlist.....');
-
-  }
-
-  void skipNext() {
     print('go to next song on playlist......');
   }
 
@@ -300,14 +317,12 @@ class _PlayerScreenState extends State<PlayerScreen> {
                     IconButton(
                         iconSize: 32,
                         icon: isPlaying ? Icon(Icons.pause) : Icon(Icons.play_arrow),
-                        onPressed: () {
-                          setState(() => togglePause());
-                        }
+                        onPressed: () => togglePause()
                     ),
                     IconButton(
                         iconSize: 32,
                         icon: Icon(Icons.skip_next),
-                        onPressed: () => skipNext()
+                        onPressed: widget.songList.indexOf(currentSong) < widget.songList.length -1 ? () => skipNext() : null
                     ),
                     Spacer(),
                     IconButton(

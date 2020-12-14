@@ -85,7 +85,7 @@ class _MyAppState extends State<MyApp> {
   }
 
   _buildAppBar(navContext) {
-    return AppBar(title: Text('My Music'), actions: <Widget>[
+    return AppBar(title: Text('NativeMusic'), actions: <Widget>[
       // overflow menu
       PopupMenuButton<Object>(
         onSelected: (value) {
