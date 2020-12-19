@@ -1,4 +1,3 @@
-import 'dart:collection';
 import 'dart:convert';
 import 'dart:io';
 
@@ -53,6 +52,62 @@ class DataService {
     }).toList();
 
     return songList;
+  }
+
+  static Future<Song> getSong(int id) async {
+    var value = await loadAsset();
+
+    var config = jsonDecode(value);
+    var client = http.Client();
+
+    String apiUrl = '${config['protocol']}://${config['api_host']}:${config['api_port']}/${config['api_endpoint']}';
+    String apiKey = config['api_key'];
+
+    var response = await client.get(Uri.parse(apiUrl + '/songs/' + id.toString()),
+        headers: {
+          HttpHeaders.authorizationHeader: apiKey
+        });
+
+    // in pageable json you get things like total number of songs, etc
+    Song song = Song.fromJson(response);
+    return song;
+  }
+
+  static Future<List<Artist>> getArtists(Map<String, int> limit) async {
+    var value = await loadAsset();
+
+    var config = jsonDecode(value);
+    var client = http.Client();
+
+    String apiUrl = '${config['protocol']}://${config['api_host']}:${config['api_port']}/${config['api_endpoint']}';
+    String apiKey = config['api_key'];
+
+    var response = await client.get(Uri.parse(apiUrl + '/artists/limit' + '?start=' + limit['start'].toString() + '&end=' + limit['end'].toString()),
+        headers: {
+          HttpHeaders.authorizationHeader: apiKey
+        });
+
+    Map pageableJson = jsonDecode(response.body);
+    var artistsJson = pageableJson['content'] as List;
+
+    List<Artist> artists = artistsJson.map((artistJson) {
+      Artist artist = Artist.fromJson(artistJson);
+      artist.albums = new List<Album>();
+      artist.songs = new List<Song>();
+
+      artistJson['songs'].forEach((songJson) {
+        Song song = new Song.fromJson(songJson);
+        artist.songs.add(song);
+      });
+
+      artistJson['albums'].forEach((albumJson) {
+        Album album = new Album.fromJson(albumJson);
+        artist.albums.add(album);
+      });
+      return artist;
+    }).toList();
+
+    return artists;
   }
 
   static Future<dynamic> postSong(Song song) async {

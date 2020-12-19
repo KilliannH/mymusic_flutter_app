@@ -7,6 +7,8 @@ const kGreyMenu = Color(0xFFEEEEEE);
 
 const kDefaultPaddin = 20.0;
 
+const appName = "MyMusic";
+
 showLoading() {
   return Center(
       child: Column(
@@ -23,4 +25,25 @@ showLoading() {
               child: Text('Awaiting result...'),
             )
           ]));
+}
+
+buildAppBar(navContext) {
+  return AppBar(title: Text(appName), actions: <Widget>[
+    // overflow menu
+    PopupMenuButton<Object>(
+      onSelected: (value) {
+        if(value == 1) {
+          // Navigator.push(navContext, MaterialPageRoute(builder: (context) => AddSongScreen()));
+        }
+      },
+      itemBuilder: (BuildContext context) {
+        var list = List<PopupMenuEntry<Object>>();
+        list.add(PopupMenuItem<Object>(
+          value: 1,
+          child: Text('Add New'),
+        ));
+        return list;
+      },
+    ),
+  ]);
 }

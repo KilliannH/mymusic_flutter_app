@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:mymusicflutterapp/screens/artists/artistsScreen.dart';
 import 'package:mymusicflutterapp/services/dataService.dart';
-import 'package:mymusicflutterapp/songItem.dart';
 import 'package:mymusicflutterapp/playerScreen.dart';
+import 'package:mymusicflutterapp/ui/songItem.dart';
 
 import 'constants.dart';
 // By convention : first import block for all packages, second import for our own files.
@@ -44,13 +45,45 @@ class _MyAppState extends State<MyApp> {
         theme: ThemeData(
           // Define the default brightness and colors.
             brightness: Brightness.light,
-            primaryColor: Color(0xFF6002EE),
-            accentColor: Color(0xFF90EE02),
+            primaryColor: Colors.blue,
+            accentColor: Colors.amber,
             errorColor: Colors.red
         ),
       home: Builder(
         builder: (navContext) => Scaffold(
-          appBar: this._buildAppBar(navContext),
+          appBar: buildAppBar(navContext),
+          drawer: Drawer(
+            child: ListView(
+              padding: EdgeInsets.zero,
+              children: <Widget>[
+                DrawerHeader(
+                  decoration: BoxDecoration(
+                    color: Colors.blue,
+                  ),
+                  child: Text(
+                    'Welcome to ' + appName,
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 24,
+                    ),
+                  ),
+                ),
+                ListTile(
+                  leading: Icon(Icons.music_note),
+                  title: Text('Songs'),
+                ),
+                ListTile(
+                  leading: Icon(Icons.library_music),
+                  title: Text('Albums'),
+                ),
+                ListTile(
+                  leading: Icon(Icons.people_alt_rounded),
+                  title: Text('Artists'),
+                  onTap: () => Navigator.push(navContext, MaterialPageRoute(builder: (context) => ArtistsScreen())),
+                ),
+              ],
+            ),
+          ),
           body: FutureBuilder<dynamic>(
             future: DataService.getSongs(limit),
             // a previously-obtained Future<dynamic> or null
@@ -82,27 +115,6 @@ class _MyAppState extends State<MyApp> {
         ),
       ),
     );
-  }
-
-  _buildAppBar(navContext) {
-    return AppBar(title: Text('NativeMusic'), actions: <Widget>[
-      // overflow menu
-      PopupMenuButton<Object>(
-        onSelected: (value) {
-          if(value == 1) {
-          // Navigator.push(navContext, MaterialPageRoute(builder: (context) => AddSongScreen()));
-          }
-        },
-        itemBuilder: (BuildContext context) {
-          var list = List<PopupMenuEntry<Object>>();
-          list.add(PopupMenuItem<Object>(
-            value: 1,
-            child: Text('Add New'),
-          ));
-          return list;
-        },
-      ),
-    ]);
   }
 
   _buildSongList(songs, context) {
