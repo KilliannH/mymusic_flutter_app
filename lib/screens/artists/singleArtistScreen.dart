@@ -25,36 +25,58 @@ class _SingleArtistScreenState extends State<SingleArtistScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: buildAppBar(context),
-        drawer: Drawer(
-          child: ListView(
-            padding: EdgeInsets.zero,
-            children: buildDrawer(context, 'Artists'),
-          ),
-        ),
         body: FutureBuilder<dynamic>(
           future: DataService.getSongsByArtistIds([widget.artist.id]),
           builder: (BuildContext context, AsyncSnapshot<dynamic> snapshot) {
             if (snapshot.hasData) {
               List<Song> songs = snapshot.data;
-              return ListView.separated(
-                padding: const EdgeInsets.all(8),
-                itemCount: songs.length,
-                itemBuilder: (BuildContext context, int index) {
-                  return InkWell(
-                    child: Container(
-                      child: Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Text(
-                          songs[index].title,
-                          style: TextStyle(fontSize: 18),
+              return Padding(
+                padding: const EdgeInsets.only(top: 15.0),
+                child: Column(
+                  children: [
+                    Container(
+                      width: 100,
+                      height: 100,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        image: DecorationImage(
+                            image: NetworkImage(widget.artist.imageUrl),
+                            fit: BoxFit.fill
                         ),
                       ),
                     ),
-                    onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => PlayerScreen(songs[index], songs))),
-                  );
-                },
-                separatorBuilder: (BuildContext context, int index) =>
-                    const Divider(),
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Text(
+                        widget.artist.name,
+                        style: TextStyle(fontSize: 24),
+                      ),
+                    ),
+                    Divider(),
+                    ListView.separated(
+                      scrollDirection: Axis.vertical,
+                      shrinkWrap: true,
+                      padding: const EdgeInsets.all(8),
+                      itemCount: songs.length,
+                      itemBuilder: (BuildContext context, int index) {
+                        return InkWell(
+                          child: Container(
+                            child: Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Text(
+                                songs[index].title,
+                                style: TextStyle(fontSize: 18),
+                              ),
+                            ),
+                          ),
+                          onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => PlayerScreen(songs[index], songs))),
+                        );
+                      },
+                      separatorBuilder: (BuildContext context, int index) =>
+                          const Divider(),
+                    ),
+                  ],
+                ),
               );
             } else if (snapshot.hasError) {
               return Center(

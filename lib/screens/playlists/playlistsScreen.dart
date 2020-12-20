@@ -1,26 +1,25 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import '../../managers/pathManager.dart';
-import 'singleArtistScreen.dart';
 import '../../services/dataService.dart';
 import '../../ui/artistItem.dart';
 import '../../constants.dart';
 
-class ArtistsScreen extends StatefulWidget {
+class PlaylistsScreen extends StatefulWidget {
   @override
   State<StatefulWidget> createState() {
-    return _ArtistsScreenState();
+    return _PlaylistsScreenState();
   }
 
-  ArtistsScreen();
+  PlaylistsScreen();
 }
 
-class _ArtistsScreenState extends State<ArtistsScreen> {
+class _PlaylistsScreenState extends State<PlaylistsScreen> {
   final limit = {'start': 0, 'end': 40};
 
   @override
   void initState() {
-    PathManager.setCurrPath('Artists');
+    PathManager.setCurrPath('Playlists');
     super.initState();
   }
 
@@ -37,7 +36,7 @@ class _ArtistsScreenState extends State<ArtistsScreen> {
         builder: (BuildContext context, AsyncSnapshot<dynamic> snapshot) {
           if (snapshot.hasData) {
             List artists = snapshot.data;
-            return _buildArtistList(artists, context);
+            return Center();//_buildArtistList(artists, context);
           } else if (snapshot.hasError) {
             return Center(
                 child: Column(
@@ -62,7 +61,7 @@ class _ArtistsScreenState extends State<ArtistsScreen> {
     );
   }
 
-  _buildArtistList(artists, context) {
+  /*_buildArtistList(artists, context) {
     return ListView.separated(
       padding: const EdgeInsets.all(8),
       itemCount: artists.length,
@@ -71,12 +70,12 @@ class _ArtistsScreenState extends State<ArtistsScreen> {
             child: Container(
               child: ArtistItem(artists[index].name, artists[index].imageUrl),
             ),
-            onTap: () => Navigator.push(
+            onTap: () => /*Navigator.push(
                 context,
                 MaterialPageRoute(
-                    builder: (context) => SingleArtistScreen(artists[index]))));
-      },
+                    builder: (context) => SingleArtistScreen(artists[index]))));*/
+        {},
       separatorBuilder: (BuildContext context, int index) => const Divider(),
     );
-  }
+  }*/
 }

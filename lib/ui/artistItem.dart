@@ -12,13 +12,19 @@ class ArtistItem extends StatelessWidget {
   Widget build(BuildContext context) {
     return new Row(
       children: <Widget>[
-        Image(
-          width: 40,
-          image: NetworkImage(this.artistImg),
-          fit: BoxFit.contain,
+        Container(
+          width: 62,
+          height: 62,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            image: DecorationImage(
+                image: NetworkImage(this.artistImg),
+                fit: BoxFit.fill
+            ),
+          ),
         ),
         Padding(
-          padding: const EdgeInsets.only(left: 8),
+          padding: const EdgeInsets.only(left: 12),
           child: Text(
             name,
             style: TextStyle(fontSize: 18),

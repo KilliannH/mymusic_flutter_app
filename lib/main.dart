@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'managers/pathManager.dart';
 import 'services/dataService.dart';
 import 'screens/playerScreen.dart';
 import 'ui/songItem.dart';
@@ -36,6 +37,12 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   final List<String> appRoutes = const ['Albums', 'Artists', 'Add'];
   final limit = { 'start': 0, 'end': 30 };
+
+  @override
+  void initState() {
+    PathManager.setCurrPath('Songs');
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {

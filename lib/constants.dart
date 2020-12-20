@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mymusicflutterapp/managers/pathManager.dart';
 import 'main.dart';
 import 'screens/artists/artistsScreen.dart';
 
@@ -67,7 +68,12 @@ buildDrawer(context, currPath) {
     ListTile(
       leading: Icon(Icons.music_note),
       title: Text('Songs'),
-      onTap: () => currPath == 'Songs' ? null : Navigator.push(context, MaterialPageRoute(builder: (context) => MyApp())),
+      onTap: () => PathManager.getCurrPath() == 'Songs' ?  Navigator.pop(context) : Navigator.push(context, MaterialPageRoute(builder: (context) => MyApp())),
+    ),
+    ListTile(
+      leading: Icon(Icons.people_alt_rounded),
+      title: Text('Playlists'),
+      onTap: () => PathManager.getCurrPath() == 'Playlists' ?  Navigator.pop(context) : Navigator.push(context, MaterialPageRoute(builder: (context) => ArtistsScreen())),
     ),
     ListTile(
       leading: Icon(Icons.library_music),
@@ -76,7 +82,7 @@ buildDrawer(context, currPath) {
     ListTile(
       leading: Icon(Icons.people_alt_rounded),
       title: Text('Artists'),
-      onTap: () => currPath == 'Artists' ? null : Navigator.push(context, MaterialPageRoute(builder: (context) => ArtistsScreen())),
+      onTap: () => PathManager.getCurrPath() == 'Artists' ?  Navigator.pop(context) : Navigator.push(context, MaterialPageRoute(builder: (context) => ArtistsScreen())),
     )
   ];
 }
