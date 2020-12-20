@@ -4,9 +4,9 @@ import 'dart:io';
 
 import 'package:http/http.dart' as http;
 import 'package:flutter/services.dart' show rootBundle;
-import 'package:mymusicflutterapp/models/Album.dart';
-import 'package:mymusicflutterapp/models/Artist.dart';
-import 'package:mymusicflutterapp/models/Song.dart';
+import '../models/Album.dart';
+import '../models/Artist.dart';
+import '../models/Song.dart';
 
 class DataService {
 
@@ -20,7 +20,7 @@ class DataService {
     var config = jsonDecode(value);
     var client = http.Client();
 
-    int order = 0;
+    int order = 1;
 
     String apiUrl = '${config['protocol']}://${config['api_host']}:${config['api_port']}/${config['api_endpoint']}';
     String apiKey = config['api_key'];
@@ -69,8 +69,6 @@ class DataService {
 
     final String encoded = jsonEncode(bodyRequest);
 
-    print(bodyRequest);
-
     var response = await client.post(Uri.parse(apiUrl + '/songs/byArtists'),
         headers: {
           HttpHeaders.authorizationHeader: apiKey,
@@ -79,7 +77,7 @@ class DataService {
 
     var songsJson = jsonDecode(response.body) as List;
 
-    int order = 0;
+    int order = 1;
 
     // in pageable json you get things like total number of songs, etc
     List<Song> songList = songsJson.map((songJson) {

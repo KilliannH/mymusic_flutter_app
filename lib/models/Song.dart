@@ -1,4 +1,4 @@
-import 'package:mymusicflutterapp/models/Album.dart';
+import '../models/Album.dart';
 
 import 'Artist.dart';
 

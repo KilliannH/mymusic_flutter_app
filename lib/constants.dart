@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:mymusicflutterapp/screens/artists/artistsScreen.dart';
+import 'main.dart';
+import 'screens/artists/artistsScreen.dart';
 
 const kTextColor = Color(0xFF535353);
 const kTextLightColor = Color(0xFFACACAC);
@@ -28,36 +29,6 @@ showLoading() {
           ]));
 }
 
-buildDrawer(context) {
-  return [
-    DrawerHeader(
-      decoration: BoxDecoration(
-        color: Colors.blue,
-      ),
-      child: Text(
-        appName,
-        style: TextStyle(
-        color: Colors.white,
-        fontSize: 24,
-        ),
-      ),
-    ),
-    ListTile(
-      leading: Icon(Icons.music_note),
-      title: Text('Songs'),
-    ),
-    ListTile(
-      leading: Icon(Icons.library_music),
-      title: Text('Albums'),
-    ),
-    ListTile(
-      leading: Icon(Icons.people_alt_rounded),
-      title: Text('Artists'),
-      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => ArtistsScreen())),
-    )
-  ];
-}
-
 buildAppBar(navContext) {
   return AppBar(title: Text(appName), actions: <Widget>[
     // overflow menu
@@ -77,4 +48,35 @@ buildAppBar(navContext) {
       },
     ),
   ]);
+}
+
+buildDrawer(context, currPath) {
+  return [
+    DrawerHeader(
+      decoration: BoxDecoration(
+        color: Colors.blue,
+      ),
+      child: Text(
+        appName,
+        style: TextStyle(
+          color: Colors.white,
+          fontSize: 24,
+        ),
+      ),
+    ),
+    ListTile(
+      leading: Icon(Icons.music_note),
+      title: Text('Songs'),
+      onTap: () => currPath == 'Songs' ? null : Navigator.push(context, MaterialPageRoute(builder: (context) => MyApp())),
+    ),
+    ListTile(
+      leading: Icon(Icons.library_music),
+      title: Text('Albums'),
+    ),
+    ListTile(
+      leading: Icon(Icons.people_alt_rounded),
+      title: Text('Artists'),
+      onTap: () => currPath == 'Artists' ? null : Navigator.push(context, MaterialPageRoute(builder: (context) => ArtistsScreen())),
+    )
+  ];
 }

@@ -1,5 +1,5 @@
-import 'package:mymusicflutterapp/models/Album.dart';
-import 'package:mymusicflutterapp/models/Song.dart';
+import 'Album.dart';
+import 'Song.dart';
 
 class Artist {
 

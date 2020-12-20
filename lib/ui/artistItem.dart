@@ -1,8 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/painting.dart';
-import 'package:mymusicflutterapp/models/Album.dart';
-import 'package:mymusicflutterapp/models/Artist.dart';
 
 class ArtistItem extends StatelessWidget {
   final String name;

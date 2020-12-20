@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:mymusicflutterapp/screens/artists/artistsScreen.dart';
-import 'package:mymusicflutterapp/services/dataService.dart';
-import 'file:///C:/Users/killi/Documents/mymusic_flutter_app/lib/screens/playerScreen.dart';
-import 'package:mymusicflutterapp/ui/songItem.dart';
+import 'services/dataService.dart';
+import 'screens/playerScreen.dart';
+import 'ui/songItem.dart';
 
 import 'constants.dart';
+import 'models/Song.dart';
 // By convention : first import block for all packages, second import for our own files.
 
 void main() {
@@ -55,7 +55,7 @@ class _MyAppState extends State<MyApp> {
           drawer: Drawer(
             child: ListView(
               padding: EdgeInsets.zero,
-              children: buildDrawer(navContext)
+              children: buildDrawer(navContext, 'Songs')
             ),
           ),
           body: FutureBuilder<dynamic>(
@@ -63,7 +63,7 @@ class _MyAppState extends State<MyApp> {
             // a previously-obtained Future<dynamic> or null
             builder: (BuildContext context, AsyncSnapshot<dynamic> snapshot) {
               if (snapshot.hasData) {
-                List songs = snapshot.data;
+                List<Song> songs = snapshot.data;
                 return _buildSongList(songs, context);
               } else if (snapshot.hasError) {
                 return Center(

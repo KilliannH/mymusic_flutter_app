@@ -1,11 +1,10 @@
-import 'dart:collection';
-
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:mymusicflutterapp/models/Song.dart';
-import 'package:mymusicflutterapp/services/dataService.dart';
+import '../../models/Song.dart';
+import '../../services/dataService.dart';
 import '../../constants.dart';
 import '../../models/Artist.dart';
+import '../playerScreen.dart';
 
 // When we are on this screen we want Songs from it, i mean songs from an Artist
 // but in Song format not in related song. Bcs on related one, we don't have artists data directly
@@ -29,27 +28,29 @@ class _SingleArtistScreenState extends State<SingleArtistScreen> {
         drawer: Drawer(
           child: ListView(
             padding: EdgeInsets.zero,
-            children: buildDrawer(context),
+            children: buildDrawer(context, 'Artists'),
           ),
         ),
         body: FutureBuilder<dynamic>(
           future: DataService.getSongsByArtistIds([widget.artist.id]),
           builder: (BuildContext context, AsyncSnapshot<dynamic> snapshot) {
             if (snapshot.hasData) {
-              List songs = snapshot.data;
+              List<Song> songs = snapshot.data;
               return ListView.separated(
                 padding: const EdgeInsets.all(8),
                 itemCount: songs.length,
                 itemBuilder: (BuildContext context, int index) {
                   return InkWell(
                     child: Container(
-                      height: 70,
-                      child: Text(
-                        songs[index].title,
-                        style: TextStyle(fontSize: 18),
+                      child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Text(
+                          songs[index].title,
+                          style: TextStyle(fontSize: 18),
+                        ),
                       ),
                     ),
-                    onTap: () => {},
+                    onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => PlayerScreen(songs[index], songs))),
                   );
                 },
                 separatorBuilder: (BuildContext context, int index) =>
