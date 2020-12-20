@@ -32,33 +32,7 @@ class _ArtistsScreenState extends State<ArtistsScreen> {
         drawer: Drawer(
           child: ListView(
             padding: EdgeInsets.zero,
-            children: <Widget>[
-              DrawerHeader(
-              decoration: BoxDecoration(
-              color: Colors.blue,
-              ),
-              child: Text(
-              'Welcome to ' + appName,
-              style: TextStyle(
-              color: Colors.white,
-              fontSize: 24,
-              ),
-              ),
-              ),
-              ListTile(
-              leading: Icon(Icons.music_note),
-              title: Text('Songs'),
-              ),
-              ListTile(
-              leading: Icon(Icons.library_music),
-              title: Text('Albums'),
-              ),
-              ListTile(
-              leading: Icon(Icons.people_alt_rounded),
-              title: Text('Artists'),
-              onTap: () => {},
-              ),
-            ],
+            children: buildDrawer(context)
           ),
         ),
         body: FutureBuilder<dynamic>(
@@ -100,7 +74,7 @@ class _ArtistsScreenState extends State<ArtistsScreen> {
     child: Container(
     child: ArtistItem(artists[index].name, artists[index].imageUrl),
     ),
-    onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => SingleArtistScreen(artists[index])))
+        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => SingleArtistScreen(artists[index])))
     );
     },
     separatorBuilder: (BuildContext context, int index) => const Divider(),

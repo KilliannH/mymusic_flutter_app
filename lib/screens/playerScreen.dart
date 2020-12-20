@@ -5,9 +5,9 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:securedplayerflutterplugin/securedplayerflutterplugin.dart';
-import 'constants.dart';
-import 'models/Artist.dart';
-import 'models/Song.dart';
+import '../constants.dart';
+import '../models/Artist.dart';
+import '../models/Song.dart';
 
 class PlayerScreen extends StatefulWidget {
   @override

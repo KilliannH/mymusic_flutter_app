@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mymusicflutterapp/screens/artists/artistsScreen.dart';
 
 const kTextColor = Color(0xFF535353);
 const kTextLightColor = Color(0xFFACACAC);
@@ -7,7 +8,7 @@ const kGreyMenu = Color(0xFFEEEEEE);
 
 const kDefaultPaddin = 20.0;
 
-const appName = "MyMusic";
+const appName = "My Music";
 
 showLoading() {
   return Center(
@@ -25,6 +26,36 @@ showLoading() {
               child: Text('Awaiting result...'),
             )
           ]));
+}
+
+buildDrawer(context) {
+  return [
+    DrawerHeader(
+      decoration: BoxDecoration(
+        color: Colors.blue,
+      ),
+      child: Text(
+        appName,
+        style: TextStyle(
+        color: Colors.white,
+        fontSize: 24,
+        ),
+      ),
+    ),
+    ListTile(
+      leading: Icon(Icons.music_note),
+      title: Text('Songs'),
+    ),
+    ListTile(
+      leading: Icon(Icons.library_music),
+      title: Text('Albums'),
+    ),
+    ListTile(
+      leading: Icon(Icons.people_alt_rounded),
+      title: Text('Artists'),
+      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => ArtistsScreen())),
+    )
+  ];
 }
 
 buildAppBar(navContext) {

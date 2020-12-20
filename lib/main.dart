@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mymusicflutterapp/screens/artists/artistsScreen.dart';
 import 'package:mymusicflutterapp/services/dataService.dart';
-import 'package:mymusicflutterapp/playerScreen.dart';
+import 'file:///C:/Users/killi/Documents/mymusic_flutter_app/lib/screens/playerScreen.dart';
 import 'package:mymusicflutterapp/ui/songItem.dart';
 
 import 'constants.dart';
@@ -55,33 +55,7 @@ class _MyAppState extends State<MyApp> {
           drawer: Drawer(
             child: ListView(
               padding: EdgeInsets.zero,
-              children: <Widget>[
-                DrawerHeader(
-                  decoration: BoxDecoration(
-                    color: Colors.blue,
-                  ),
-                  child: Text(
-                    'Welcome to ' + appName,
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 24,
-                    ),
-                  ),
-                ),
-                ListTile(
-                  leading: Icon(Icons.music_note),
-                  title: Text('Songs'),
-                ),
-                ListTile(
-                  leading: Icon(Icons.library_music),
-                  title: Text('Albums'),
-                ),
-                ListTile(
-                  leading: Icon(Icons.people_alt_rounded),
-                  title: Text('Artists'),
-                  onTap: () => Navigator.push(navContext, MaterialPageRoute(builder: (context) => ArtistsScreen())),
-                ),
-              ],
+              children: buildDrawer(navContext)
             ),
           ),
           body: FutureBuilder<dynamic>(
