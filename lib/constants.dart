@@ -71,12 +71,12 @@ buildDrawer(context, currPath) {
       onTap: () => PathManager.getCurrPath() == 'Songs' ?  Navigator.pop(context) : Navigator.push(context, MaterialPageRoute(builder: (context) => MyApp())),
     ),
     ListTile(
-      leading: Icon(Icons.people_alt_rounded),
+      leading: Icon(Icons.library_music),
       title: Text('Playlists'),
       onTap: () => PathManager.getCurrPath() == 'Playlists' ?  Navigator.pop(context) : Navigator.push(context, MaterialPageRoute(builder: (context) => ArtistsScreen())),
     ),
     ListTile(
-      leading: Icon(Icons.library_music),
+      leading: Icon(Icons.image),
       title: Text('Albums'),
     ),
     ListTile(
