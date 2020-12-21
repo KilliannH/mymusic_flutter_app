@@ -33,13 +33,76 @@ class PlaylistItem extends StatelessWidget {
   }
 
   _buildImageWidget() {
-    return Container(
-        width: 80.0,
-        height: 80.0,
-        decoration: new BoxDecoration(
-          color: Colors.red,
-          shape: BoxShape.rectangle
-        )
-    );
+    if(this.firstFourAlbumImages.length == 0) {
+      return Container(
+        width: 70.0,
+        height: 70.0,
+        color: Colors.black12,
+        child: Icon(Icons.music_note,)
+      );
+    } else if(this.firstFourAlbumImages.length == 1) {
+      return Container(
+          width: 70.0,
+          height: 70.0,
+          color: Colors.black12,
+          child: Image(
+              image: NetworkImage(this.firstFourAlbumImages[0]),
+          ),
+      );
+    } else if(this.firstFourAlbumImages.length == 2) {
+      return Container(
+        width: 70.0,
+        height: 70.0,
+        child: Row(
+          children: [
+            Container(
+              color: Colors.red,
+              width: 35,
+              height: 70,
+              child: Image(
+                image: NetworkImage(this.firstFourAlbumImages[0]),
+                fit: BoxFit.cover,
+              ),
+            ),
+            Container(
+              color: Colors.green,
+              width: 35,
+              height: 70,
+              child: Image(
+                image: NetworkImage(this.firstFourAlbumImages[1]),
+                fit: BoxFit.cover,
+              ),
+            ),
+          ],
+        ),
+      );
+    } else if(this.firstFourAlbumImages.length == 3) {
+      return Container(
+        width: 70.0,
+        height: 70.0,
+        child: Row(
+          children: [
+            Container(
+              color: Colors.red,
+              width: 35,
+              height: 70,
+              child: Image(
+                image: NetworkImage(this.firstFourAlbumImages[0]),
+                fit: BoxFit.cover,
+              ),
+            ),
+            Container(
+              color: Colors.green,
+              width: 35,
+              height: 70,
+              child: Image(
+                image: NetworkImage(this.firstFourAlbumImages[1]),
+                fit: BoxFit.cover,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
   }
 }

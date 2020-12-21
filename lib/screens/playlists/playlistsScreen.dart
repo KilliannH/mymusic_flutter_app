@@ -81,6 +81,7 @@ class _PlaylistsScreenState extends State<PlaylistsScreen> {
   }
 
   List<String> _getFirstFourSongsImg(List<Song> songs) {
+    // todo -- check if there are songs from the same album, if so, skip to another album...
     List<String> imageUrls = new List<String>();
     for(int i = 0; i < (songs.length > 4 ? 4 : songs.length); i++) {
       imageUrls.add(songs[i].album.imageUrl);
