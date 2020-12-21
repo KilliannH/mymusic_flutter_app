@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mymusicflutterapp/screens/add/addSongScreen.dart';
 import 'managers/pathManager.dart';
 import 'services/dataService.dart';
 import 'screens/playerScreen.dart';
@@ -54,7 +55,11 @@ class _MyAppState extends State<MyApp> {
             brightness: Brightness.light,
             primaryColor: Colors.blue,
             accentColor: Colors.amber,
-            errorColor: Colors.red
+            errorColor: Colors.red,
+          floatingActionButtonTheme: FloatingActionButtonThemeData(
+            foregroundColor: Colors.white,
+            backgroundColor: Colors.amber
+          )
         ),
       home: Builder(
         builder: (navContext) => Scaffold(
@@ -64,6 +69,10 @@ class _MyAppState extends State<MyApp> {
               padding: EdgeInsets.zero,
               children: buildDrawer(navContext, 'Songs')
             ),
+          ),
+          floatingActionButton: FloatingActionButton(
+            onPressed: () => Navigator.push(navContext, MaterialPageRoute(builder: (context) => AddSongScreen())),
+            child: Icon(Icons.add),
           ),
           body: FutureBuilder<dynamic>(
             future: DataService.getSongs(limit),

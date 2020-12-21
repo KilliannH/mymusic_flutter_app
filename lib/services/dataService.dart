@@ -197,6 +197,42 @@ class DataService {
     return artists;
   }
 
+  static Future<List<Album>> getAlbums() async {
+    var value = await loadAsset();
+
+    var config = jsonDecode(value);
+    var client = http.Client();
+
+    String apiUrl = '${config['protocol']}://${config['api_host']}:${config['api_port']}/${config['api_endpoint']}';
+    String apiKey = config['api_key'];
+
+    var response = await client.get(Uri.parse(apiUrl + '/albums/'),
+        headers: {
+          HttpHeaders.authorizationHeader: apiKey
+        });
+
+    var albumsJson = jsonDecode(response.body) as List;
+
+    List<Album> albums = albumsJson.map((albumJson) {
+      Album album = Album.fromJson(albumJson);
+      album.artists = new List<Artist>();
+      album.songs = new List<Song>();
+
+      albumJson['songs'].forEach((songJson) {
+        Song song = new Song.fromJson(songJson);
+        album.songs.add(song);
+      });
+
+      albumJson['artists'].forEach((artistJson) {
+        Artist artist = new Artist.fromJson(artistJson);
+        album.artists.add(artist);
+      });
+      return album;
+    }).toList();
+
+    return albums;
+  }
+
   static Future<dynamic> postSong(Song song) async {
     var value = await loadAsset();
 

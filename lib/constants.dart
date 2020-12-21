@@ -32,31 +32,14 @@ showLoading() {
 }
 
 buildAppBar(navContext) {
-  return AppBar(title: Text(appName), actions: <Widget>[
-    // overflow menu
-    PopupMenuButton<Object>(
-      onSelected: (value) {
-        if(value == 1) {
-          // Navigator.push(navContext, MaterialPageRoute(builder: (context) => AddSongScreen()));
-        }
-      },
-      itemBuilder: (BuildContext context) {
-        var list = List<PopupMenuEntry<Object>>();
-        list.add(PopupMenuItem<Object>(
-          value: 1,
-          child: Text('Add New'),
-        ));
-        return list;
-      },
-    ),
-  ]);
+  return AppBar(title: Text(appName));
 }
 
 buildDrawer(context, currPath) {
   return [
     DrawerHeader(
       decoration: BoxDecoration(
-        color: Colors.blue,
+        color: Colors.lightBlue,
       ),
       child: Text(
         appName,
