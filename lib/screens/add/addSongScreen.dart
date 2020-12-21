@@ -25,6 +25,7 @@ class AddSongScreenState extends State<AddSongScreen> {
   var _formKeys = [GlobalKey<FormState>(), GlobalKey<FormState>()];
 
   bool _loadingState = false;
+  // todo -- remove this: dev path
   int _index = 2;
   int numberOfSteps = 2;
   List<Widget> formList;
@@ -66,12 +67,14 @@ class AddSongScreenState extends State<AddSongScreen> {
                 formList = [
                   _buildFirstForm(),
                   _buildSecondForm(navContext),
-                  SongRelationships(albumNames: snapshot.data)
+                  _buildRelationships(snapshot.data)
                 ];
                 return _loadingState
                     ? showLoading()
+                    : _index != 2 ? Column(
+                    children: [_buildStepperDots(), formList[_index]])
                     : Column(
-                    children: [_buildStepperDots(), formList[_index]]);
+                    children: [formList[_index]]);
               } else if (snapshot.hasError) {
                 return Center(
                     child: Column(
@@ -258,6 +261,17 @@ class AddSongScreenState extends State<AddSongScreen> {
       ),
     );
   }
+
+  _buildRelationships(albumNames) {
+    return Column(
+      children: [
+        Padding(
+          padding: EdgeInsets.all(12.0),
+          child: SongRelatedAlbum(albumNames: albumNames),
+        )
+      ],
+    );
+  }
 }
 
 class ColorDot extends StatelessWidget {
@@ -290,21 +304,21 @@ class ColorDot extends StatelessWidget {
   }
 }
 
-class SongRelationships extends StatefulWidget {
+class SongRelatedAlbum extends StatefulWidget {
 
   @override
   State<StatefulWidget> createState() {
-    return _SongRelationshipsState();
+    return _SongRelatedAlbumState();
   }
   final List<String> albumNames;
 
-  const SongRelationships({
+  const SongRelatedAlbum({
     Key key,
     this.albumNames,
   }) : super(key: key);
 }
 
-class _SongRelationshipsState extends State<SongRelationships> {
+class _SongRelatedAlbumState extends State<SongRelatedAlbum> {
 
   String dropdownValue = 'Related Album';
   List<String> items = new List();
@@ -320,36 +334,28 @@ class _SongRelationshipsState extends State<SongRelationships> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: <Widget>[
-        Padding(
-          padding: const EdgeInsets.all(12.0),
-          child: DropdownButton<String>(
-            value: dropdownValue,
-            icon: Icon(Icons.arrow_downward),
-            iconSize: 24,
-            elevation: 16,
-            style: TextStyle(color: Colors.deepPurple),
-            underline: Container(
-              height: 2,
-              color: Colors.deepPurpleAccent,
-            ),
-            onChanged: (String newValue) {
-              setState(() {
-                dropdownValue = newValue;
-              });
-            },
-            items: items
-                .map<DropdownMenuItem<String>>((String value) {
-              return DropdownMenuItem<String>(
-                value: value,
-                child: Text(value),
-              );
-            }).toList(),
-          ),
-        ),
-      ],
-    );
+    return DropdownButton<String>(
+              value: dropdownValue,
+              icon: Icon(Icons.arrow_downward),
+              iconSize: 24,
+              elevation: 16,
+              style: TextStyle(color: Colors.deepPurple),
+              underline: Container(
+                height: 2,
+                color: Colors.deepPurpleAccent,
+              ),
+              onChanged: (String newValue) {
+                setState(() {
+                  dropdownValue = newValue;
+                });
+              },
+              items: items
+                  .map<DropdownMenuItem<String>>((String value) {
+                return DropdownMenuItem<String>(
+                  value: value,
+                  child: Text(value),
+                );
+              }).toList(),
+            );
   }
 }
