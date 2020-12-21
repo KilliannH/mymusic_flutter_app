@@ -38,7 +38,7 @@ class _PlaylistsScreenState extends State<PlaylistsScreen> {
         builder: (BuildContext context, AsyncSnapshot<dynamic> snapshot) {
           if (snapshot.hasData) {
             List playlists = snapshot.data;
-            return _buildPlaylistList(playlists, context);
+            return _buildPlaylists(playlists, context);
           } else if (snapshot.hasError) {
             return Center(
                 child: Column(
@@ -63,7 +63,7 @@ class _PlaylistsScreenState extends State<PlaylistsScreen> {
     );
   }
 
-  _buildPlaylistList(playlists, context) {
+  _buildPlaylists(playlists, context) {
     return ListView.separated(
       padding: const EdgeInsets.all(8),
       itemCount: playlists.length,
@@ -80,7 +80,11 @@ class _PlaylistsScreenState extends State<PlaylistsScreen> {
     );
   }
 
-  _getFirstFourSongsImg(List<Song> songs) {
-
+  List<String> _getFirstFourSongsImg(List<Song> songs) {
+    List<String> imageUrls = new List<String>();
+    for(int i = 0; i < (songs.length > 4 ? 4 : songs.length); i++) {
+      imageUrls.add(songs[i].album.imageUrl);
+    }
+    return imageUrls;
   }
 }

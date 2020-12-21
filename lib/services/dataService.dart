@@ -4,6 +4,7 @@ import 'dart:io';
 
 import 'package:http/http.dart' as http;
 import 'package:flutter/services.dart' show rootBundle;
+import 'package:mymusicflutterapp/models/Playlist.dart';
 import '../models/Album.dart';
 import '../models/Artist.dart';
 import '../models/Song.dart';
@@ -116,6 +117,47 @@ class DataService {
     // in pageable json you get things like total number of songs, etc
     Song song = Song.fromJson(response);
     return song;
+  }
+
+  static Future<List<Playlist>> getPlaylists(Map<String, int> limit) async {
+    var value = await loadAsset();
+
+    var config = jsonDecode(value);
+    var client = http.Client();
+
+    String apiUrl = '${config['protocol']}://${config['api_host']}:${config['api_port']}/${config['api_endpoint']}';
+    String apiKey = config['api_key'];
+
+    var response = await client.get(Uri.parse(apiUrl + '/playlists/limit' + '?start=' + limit['start'].toString() + '&end=' + limit['end'].toString()),
+        headers: {
+          HttpHeaders.authorizationHeader: apiKey
+        });
+
+    Map pageableJson = jsonDecode(response.body);
+    var playlistsJson = pageableJson['content'] as List;
+
+    List<Playlist> playlists = playlistsJson.map((playlistJson) {
+      Playlist playlist = Playlist.fromJson(playlistJson);
+      playlist.songs = new List<Song>();
+
+      playlistJson['songs'].forEach((songJson) {
+        Song song = new Song.fromJson(songJson);
+        Album album = Album.fromJson(songJson['album']);
+
+        // initiate artists list bcs it's not done when a new song instance is created
+        song.artists = new List<Artist>();
+        songJson['artists'].forEach((artistJson) {
+          Artist artist = new Artist.fromJson(artistJson);
+          song.artists.add(artist);
+        });
+        song.album = album;
+        playlist.songs.add(song);
+      });
+
+      return playlist;
+    }).toList();
+
+    return playlists;
   }
 
   static Future<List<Artist>> getArtists(Map<String, int> limit) async {
