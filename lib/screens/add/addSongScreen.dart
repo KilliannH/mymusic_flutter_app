@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:mymusicflutterapp/main.dart';
 import 'package:mymusicflutterapp/models/Artist.dart';
-import '../../ui/albumItem.dart';
+
 import '../../models/Album.dart';
 import '../../models/Song.dart';
 import '../../services/dataService.dart';
@@ -24,14 +24,16 @@ class AddSongScreen extends StatefulWidget {
 }
 
 class _AddSongScreenState extends State<AddSongScreen> {
-  var _formKeys = [GlobalKey<FormState>(), GlobalKey<FormState>(), null, null];
+  var _formKeys = [GlobalKey<FormState>(), GlobalKey<FormState>(), null, null, null];
   final limit = {'start': 0, 'end': 30};
 
   bool _loadingState = false;
   // todo -- remove this: dev path
-  int _index = 2;
+  int _index = 4;
   int numberOfSteps = 5;
   List<Widget> formList;
+
+  String songJsonStr = "";
 
   Song newSong = new Song();
   String ytUrl;
@@ -62,7 +64,7 @@ class _AddSongScreenState extends State<AddSongScreen> {
       // there is no need to recall the widget like _AddSongScreenState() bcs it will not reffer to this.
       SongRelatedAlbum(key: UniqueKey(), parent: this, albums: this.widget.albums),
       SongRelatedArtists(key: UniqueKey(), parent: this, artists: widget.artists),
-      Center(),
+      _buildValidateStep(),
     ];
     _loadingState = false;
     super.initState();
@@ -227,7 +229,7 @@ class _AddSongScreenState extends State<AddSongScreen> {
         crossAxisAlignment: CrossAxisAlignment.center,
         children: <Widget>[
           FlatButton(
-            onPressed: _index == 1 || _index == 3
+            onPressed: _index == 1 || _index == 3 || _index == 4
                 ? () => setState(() {
                       _index--;
                     })
@@ -236,12 +238,12 @@ class _AddSongScreenState extends State<AddSongScreen> {
               children: <Widget>[
                 Icon(
                   Icons.keyboard_arrow_left,
-                  color: _index == 1 || _index == 3 ? kTextColor : Colors.grey,
+                  color: _index == 1 || _index == 3 ||_index == 4 ? kTextColor : Colors.grey,
                 ),
                 Text(
                   'Back'.toUpperCase(),
                   style: TextStyle(
-                      color: _index == 1 || _index == 3
+                      color: _index == 1 || _index == 3 || _index == 4
                           ? kTextColor
                           : Colors.grey),
                 ),
@@ -276,6 +278,38 @@ class _AddSongScreenState extends State<AddSongScreen> {
           ),
         ],
       ),
+    );
+  }
+
+  _buildValidateStep() {
+    return Column(
+      children: [
+        Padding(padding: EdgeInsets.all(16), child: Text(songJsonStr, style: TextStyle(fontSize: 12),)),
+        Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: RaisedButton(
+              onPressed: () async {
+          setState(() {
+            _loadingState = true;
+          });
+          Song persistedSong = await DataService.newSong(newSong);
+          await DataService.newSongAlbum(persistedSong.id, newSong.album.id);
+          List<Future> futures;
+          newSong.artists.forEach((artist) {
+            futures.add(DataService.newSongArtist(persistedSong.id, artist.id));
+          });
+          try {
+            await Future.wait(futures);
+          } catch (e) {
+            return Future.error(e);
+          }
+          Scaffold
+              .of(context)
+              .showSnackBar(SnackBar(content: Text('Song added successfully!')));
+          return MaterialPageRoute(builder: (context) => MyApp());
+        }, child: Text('Submit'.toUpperCase())),
+        ),
+      ],
     );
   }
 }
@@ -336,7 +370,7 @@ class _SongRelatedAlbumState extends State<SongRelatedAlbum> {
       itemBuilder: (BuildContext context, int index) {
         return InkWell(
             child: Container(
-              height: 40,
+              height: 62,
               child: _buildAlbumRelItem(albums[index]),
             ),
             onTap: () {

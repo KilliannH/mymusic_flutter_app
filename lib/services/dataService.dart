@@ -306,7 +306,7 @@ class DataService {
     return albums;
   }
 
-  static Future<dynamic> postSong(Song song) async {
+  static Future<dynamic> newSong(Song song) async {
     var value = await loadAsset();
 
     var config = jsonDecode(value);
@@ -321,6 +321,44 @@ class DataService {
           'Content-Type': 'application/json'
         }, body: jsonEncode(<String, String>
         {'title': song.title, 'filename': song.filename}));
+
+    return response;
+  }
+
+  static Future<dynamic> newSongArtist(int songId, int artistId) async {
+    var value = await loadAsset();
+
+    var config = jsonDecode(value);
+    var client = http.Client();
+
+    String apiUrl = '${config['protocol']}://${config['api_host']}:${config['api_port']}/${config['api_endpoint']}';
+    String apiKey = config['apiKey'];
+
+    var response = await client.post(Uri.parse(apiUrl + '/songs/' + songId.toString() + '/artists/' + artistId.toString()),
+        headers: {
+          HttpHeaders.authorizationHeader: apiKey,
+          'Content-Type': 'application/json'
+        }, body: jsonEncode(<String, String>
+        {}));
+
+    return response;
+  }
+
+  static Future<dynamic> newSongAlbum(int songId, int albumId) async {
+    var value = await loadAsset();
+
+    var config = jsonDecode(value);
+    var client = http.Client();
+
+    String apiUrl = '${config['protocol']}://${config['api_host']}:${config['api_port']}/${config['api_endpoint']}';
+    String apiKey = config['apiKey'];
+
+    var response = await client.post(Uri.parse(apiUrl + '/songs/' + songId.toString() + '/albums/' + albumId.toString()),
+        headers: {
+          HttpHeaders.authorizationHeader: apiKey,
+          'Content-Type': 'application/json'
+        }, body: jsonEncode(<String, String>
+        {}));
 
     return response;
   }
