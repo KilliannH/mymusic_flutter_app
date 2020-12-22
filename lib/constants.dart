@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:mymusicflutterapp/managers/pathManager.dart';
 import 'package:mymusicflutterapp/screens/playlists/playlistsScreen.dart';
 import 'main.dart';
+import 'models/Artist.dart';
 import 'screens/artists/artistsScreen.dart';
 
 const kTextColor = Color(0xFF535353);
@@ -12,6 +13,23 @@ const kGreyMenu = Color(0xFFEEEEEE);
 const kDefaultPaddin = 20.0;
 
 const appName = "My Music";
+
+concatArtists(List<Artist> artists) {
+  var text = "";
+  var index = 0;
+  artists.forEach((artist) {
+    if (index < artists.length -1) {
+      text += artist.name + ", ";
+    } else {
+      text += artist.name;
+    }
+    index++;
+  });
+  if(text == "") {
+    text = "Unknown";
+  }
+  return text;
+}
 
 showLoading() {
   return Center(

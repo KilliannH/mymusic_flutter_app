@@ -39,15 +39,19 @@ class DataService {
     // if we ever want an album list or an artist list we would provide relations on those too.
     List<Song> songList = songsJson.map((songJson) {
       Song song = Song.fromJson(songJson);
-      Album album = Album.fromJson(songJson['album']);
-
+      Album album;
+      if(songJson['album'] != null) {
+        album = Album.fromJson(songJson['album']);
+      }
       // initiate artists list bcs it's not done when a new song instance is created
       song.artists = new List<Artist>();
       songJson['artists'].forEach((artistJson) {
         Artist artist = new Artist.fromJson(artistJson);
         song.artists.add(artist);
       });
-      song.album = album;
+      if(album != null) {
+        song.album = album;
+      }
       song.order = order;
       order++;
       return song;
@@ -312,15 +316,35 @@ class DataService {
     var config = jsonDecode(value);
     var client = http.Client();
 
-    String apiUrl = '${config['protocol']}://${config['api_host']}:${config['api_port']}/${config['api_endpoint']}';
-    String apiKey = config['apiKey'];
+    String apiUrl = '${config['protocol']}://${config['api_host']}/${config['api_endpoint']}';
+    String apiKey = config['api_key'];
 
     var response = await client.post(Uri.parse(apiUrl + '/songs'),
         headers: {
           HttpHeaders.authorizationHeader: apiKey,
           'Content-Type': 'application/json'
-        }, body: jsonEncode(<String, String>
+        },
+        body: jsonEncode(<String, String>
         {'title': song.title, 'filename': song.filename}));
+
+    return response;
+  }
+
+  static Future<dynamic> downloadSong(Song song, String youtubeId) async {
+    var value = await loadAsset();
+
+    var config = jsonDecode(value);
+    var client = http.Client();
+
+    String apiUrl = '${config['protocol']}://${config['api_host']}:${config['api_port']}';
+    String apiKey = config['api_key'];
+
+    var response = await client.post(Uri.parse(apiUrl + '/download'),
+        headers: {
+          HttpHeaders.authorizationHeader: apiKey,
+          'Content-Type': 'application/json'
+        }, body: jsonEncode(<String, String>
+        {'youtubeId': youtubeId, 'filename': song.filename}));
 
     return response;
   }
@@ -332,7 +356,7 @@ class DataService {
     var client = http.Client();
 
     String apiUrl = '${config['protocol']}://${config['api_host']}:${config['api_port']}/${config['api_endpoint']}';
-    String apiKey = config['apiKey'];
+    String apiKey = config['api_key'];
 
     var response = await client.post(Uri.parse(apiUrl + '/songs/' + songId.toString() + '/artists/' + artistId.toString()),
         headers: {
@@ -351,7 +375,7 @@ class DataService {
     var client = http.Client();
 
     String apiUrl = '${config['protocol']}://${config['api_host']}:${config['api_port']}/${config['api_endpoint']}';
-    String apiKey = config['apiKey'];
+    String apiKey = config['api_key'];
 
     var response = await client.post(Uri.parse(apiUrl + '/songs/' + songId.toString() + '/albums/' + albumId.toString()),
         headers: {

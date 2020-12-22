@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -28,15 +29,14 @@ class _AddSongScreenState extends State<AddSongScreen> {
   final limit = {'start': 0, 'end': 30};
 
   bool _loadingState = false;
-  // todo -- remove this: dev path
-  int _index = 4;
+  int _index = 0;
   int numberOfSteps = 5;
   List<Widget> formList;
 
   String songJsonStr = "";
 
   Song newSong = new Song();
-  String ytUrl;
+  String youtubeId;
 
   _getDots() {
     final List<Widget> widgets = [];
@@ -50,6 +50,11 @@ class _AddSongScreenState extends State<AddSongScreen> {
     if (formKey != null && formKey.currentState.validate()) {
       _index++;
     } else if (_index >= 2) {
+      if(_index == 4) {
+        setState(() {
+          songJsonStr = newSong.toJson();
+        });
+      }
       _index++;
     }
   }
@@ -100,7 +105,9 @@ class _AddSongScreenState extends State<AddSongScreen> {
                 if (value.isEmpty) {
                   return 'Please enter a title';
                 } else {
-                  newSong.title = value.trim();
+                  setState(() {
+                    newSong.title = value.trim();
+                  });
                   return null;
                 }
               },
@@ -117,7 +124,9 @@ class _AddSongScreenState extends State<AddSongScreen> {
                 if (value.isEmpty) {
                   return 'Please enter a filename';
                 } else {
-                  newSong.filename = value.trim();
+                  setState(() {
+                    newSong.filename = value.trim();
+                  });
                   return null;
                 }
               },
@@ -137,15 +146,17 @@ class _AddSongScreenState extends State<AddSongScreen> {
           Padding(
             padding: const EdgeInsets.all(12.0),
             child: TextFormField(
-              initialValue: ytUrl != null ? ytUrl : null,
+              initialValue: youtubeId != null ? youtubeId : null,
               decoration: const InputDecoration(
-                hintText: 'Youtube Url',
+                hintText: 'Youtube Id',
               ),
               validator: (value) {
                 if (value.isEmpty) {
-                  return 'Please enter the youtube url';
+                  return 'Please enter the youtube id';
                 } else {
-                  ytUrl = value.trim();
+                  setState(() {
+                    youtubeId = value.trim();
+                  });
                   return null;
                 }
               },
@@ -164,11 +175,23 @@ class _AddSongScreenState extends State<AddSongScreen> {
                         setState(() {
                           _loadingState = true;
                         });
-                        /*DataService.postSong(newSong).then((response) {
-                                if (response.statusCode == 200) { */
-                        _showContinueDialog();
-                        //}
-                        //}); /* successfully added song...  after a spinner*///);
+                        DataService.newSong(newSong).then((response) {
+                          print(response.statusCode.toString() + " " + response.body.toString());
+                                if (response.statusCode == 200) {
+                                  var songJson = jsonDecode(response.body);
+                                  setState(() {
+                                    newSong = Song.fromJson(songJson);
+                                  });
+                                  print(newSong.toString());
+                                  print(youtubeId);
+                                  DataService.downloadSong(newSong, youtubeId).then((response) {
+                                    print(response.statusCode.toString() + " " + response.body.toString());
+                                    if (response.statusCode == 200) {
+                                      _showContinueDialog();
+                                    }
+                                  });
+                                }
+                        }); /* successfully added song...  after a spinner*///);
                       }
                     },
                     child: Text('Submit'.toUpperCase()),
@@ -200,6 +223,9 @@ class _AddSongScreenState extends State<AddSongScreen> {
             TextButton(
               child: Text('Cancel'),
               onPressed: () {
+                setState(() {
+                  _loadingState = false;
+                });
                 Navigator.push(context,
                     MaterialPageRoute(builder: (context) => MyApp()));
               },

@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/painting.dart';
+import '../constants.dart';
 import '../models/Album.dart';
 import '../models/Artist.dart';
 
@@ -14,7 +15,7 @@ class SongItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return new Row(
-      children: <Widget>[
+      children: this.songAlbum != null ? <Widget>[
         Image(
           image: NetworkImage(this.songAlbum.imageUrl),
           fit: BoxFit.contain,
@@ -30,7 +31,29 @@ class SongItem extends StatelessWidget {
                 style: TextStyle(fontSize: 18),
               ),
               Text(
-                _concatArtists(this.songArtists),
+                concatArtists(this.songArtists),
+              ),
+            ],
+          ),
+        ),
+      ] : <Widget>[
+      Container(
+      width: 70.0,
+      height: 70.0,
+      color: Colors.black12,
+      child: Icon(Icons.music_note,)),
+        Container(
+          margin: new EdgeInsets.all(8),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              Text(
+                songTitle,
+                style: TextStyle(fontSize: 18),
+              ),
+              Text(
+                concatArtists(this.songArtists),
               ),
             ],
           ),
@@ -38,19 +61,5 @@ class SongItem extends StatelessWidget {
       ],
 
     );
-  }
-
-  _concatArtists(List<Artist> artists) {
-    var text = "";
-    var index = 0;
-    artists.forEach((artist) {
-      if (index < artists.length -1) {
-        text += artist.name + ", ";
-      } else {
-        text += artist.name;
-      }
-      index++;
-    });
-    return text;
   }
 }

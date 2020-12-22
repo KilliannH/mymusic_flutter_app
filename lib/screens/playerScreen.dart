@@ -247,15 +247,19 @@ class _PlayerScreenState extends State<PlayerScreen> {
               ),
               Padding(
                   padding: EdgeInsets.only(bottom: 30),
-                  child: Text(_concatArtists(currentSong.artists), style: TextStyle(fontSize: 18),)
+                  child: Text(concatArtists(currentSong.artists), style: TextStyle(fontSize: 18),)
               ),
               Padding(
                 padding: EdgeInsets.only(bottom: 24),
-                child: Image(image: NetworkImage(
+                child: currentSong.album != null ? Image(image: NetworkImage(
                     currentSong.album.imageUrl),
                     width: 300,
                     height: 300
-                ),
+                ) : Container(
+                    width: 300.0,
+                    height: 300.0,
+                    color: Colors.black12,
+                    child: Icon(Icons.music_note, size: 80,)),
               ),
                 Padding(
                   padding: EdgeInsets.only(top: 18),
@@ -339,19 +343,5 @@ class _PlayerScreenState extends State<PlayerScreen> {
             ]),
         ),
     );
-  }
-
-  _concatArtists(List<Artist> artists) {
-    var text = "";
-    var index = 0;
-    artists.forEach((artist) {
-      if (index < artists.length -1) {
-        text += artist.name + ", ";
-      } else {
-        text += artist.name;
-      }
-      index++;
-    });
-    return text;
   }
 }
