@@ -1,16 +1,14 @@
 import 'dart:async';
-import 'dart:convert';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
-import 'package:flutter/services.dart';
+import 'package:mymusicflutterapp/main.dart';
+import '../../ui/albumItem.dart';
 import '../../models/Album.dart';
 import '../../models/Song.dart';
 import '../../services/dataService.dart';
-import 'package:securedplayerflutterplugin/securedplayerflutterplugin.dart';
 import '../../constants.dart';
-import '../../models/Song.dart';
 
 class AddSongScreen extends StatefulWidget {
   AddSongScreen({Key key}) : super(key: key);
@@ -27,18 +25,11 @@ class AddSongScreenState extends State<AddSongScreen> {
   bool _loadingState = false;
   // todo -- remove this: dev path
   int _index = 2;
-  int numberOfSteps = 2;
+  int numberOfSteps = 5;
   List<Widget> formList;
 
   Song newSong = new Song();
   String ytUrl;
-
-  Future<List<String>> _getAlbumNames() async {
-    List<Album> albums = await DataService.getAlbums();
-    return albums.map((album) {
-      return album.title;
-    }).toList();
-  }
 
   _getDots() {
     final List<Widget> widgets = [];
@@ -58,42 +49,18 @@ class AddSongScreenState extends State<AddSongScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: buildAppBar(context),
-        body: FutureBuilder<dynamic>(
-            future: _getAlbumNames(),
+        body: Builder(
             // a previously-obtained Future<dynamic> or null
-            builder: (BuildContext navContext, AsyncSnapshot<dynamic> snapshot) {
-              if(snapshot.hasData) {
+            builder: (BuildContext navContext) {
 
                 formList = [
                   _buildFirstForm(),
                   _buildSecondForm(navContext),
-                  _buildRelationships(snapshot.data)
+                  _buildRelationships()
                 ];
                 return _loadingState
                     ? showLoading()
-                    : _index != 2 ? Column(
-                    children: [_buildStepperDots(), formList[_index]])
-                    : Column(
-                    children: [formList[_index]]);
-              } else if (snapshot.hasError) {
-                return Center(
-                    child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: <Widget>[
-                          Icon(
-                            Icons.error_outline,
-                            color: Theme.of(context).errorColor,
-                            size: 60,
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.only(top: 16),
-                            child: Text('Error: ${snapshot.error}'),
-                          )
-                        ]));
-              } else {
-                return showLoading();
-              }
+                    : Column(children: [_buildStepperDots(), formList[_index]]);
         }));
   }
 
@@ -167,40 +134,71 @@ class AddSongScreenState extends State<AddSongScreen> {
             ),
           ),
           Padding(
-            padding: EdgeInsets.symmetric(vertical: 16.0),
-            child: Flex(
-              direction: Axis.horizontal,
-              children: <Widget>[
-                Expanded(
-                  child: RaisedButton(
-                    // no need to check the _formKey[0] bcs it has been checked when clicking on NEXT button
-                    onPressed: (_formKeys[1].currentState != null &&
-                            _formKeys[1].currentState.validate())
-                        ? () {
-                            setState(() {
-                              _loadingState = true;
-                            });
-                            DataService.postSong(newSong).then((response) {
-                              if (response.statusCode == 200) {
-                                setState(() {
-                                  newSong = Song();
-                                  _index = 0;
-                                  _loadingState = false;
-                                });
-                                Scaffold.of(_context).showSnackBar(SnackBar(
-                                    content: Text('Song added successfully!')));
-                              }
-                            } /* successfully added song...  after a spinner*/);
+              padding: const EdgeInsets.all(16.0),
+              child: Flex(
+                direction: Axis.horizontal,
+                children: <Widget>[
+                  Expanded(
+                    child: RaisedButton(
+                      // no need to check the _formKey[0] bcs it has been checked when clicking on NEXT button
+                      onPressed: () {
+                        if(_formKeys[1].currentState.validate()) {
+                              setState(() {
+                                _loadingState = true;
+                              });
+                              /*DataService.postSong(newSong).then((response) {
+                                if (response.statusCode == 200) { */
+                                  _showContinueDialog(_context);
+                                //}
+                              //}); /* successfully added song...  after a spinner*///);
                           }
-                        : null,
-                    child: Text('Submit'.toUpperCase()),
+                        },
+                      child: Text('Submit'.toUpperCase()),
+                    ),
                   ),
-                ),
-              ],
-            ),
+                ],
+              ),
           ),
         ],
       ),
+    );
+  }
+
+  Future<void> _showContinueDialog(navContext) async {
+    return showDialog<void>(
+      context: navContext,
+      barrierDismissible: false, // user must tap button!
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Song added successfully'),
+          content: SingleChildScrollView(
+            child: ListBody(
+              children: <Widget>[
+                Text('Would you like to continue with relationships?'),
+              ],
+            ),
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: Text('Cancel'),
+              onPressed: () {
+                Navigator.push(navContext, MaterialPageRoute(builder: (context) => MyApp()));
+              },
+            ),
+            RaisedButton(
+              child: Text('OK'),
+              color: Colors.deepPurple,
+              onPressed: () {
+                _index++;
+                setState(() {
+                  _loadingState = false;
+                });
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
     );
   }
 
@@ -262,12 +260,12 @@ class AddSongScreenState extends State<AddSongScreen> {
     );
   }
 
-  _buildRelationships(albumNames) {
+  _buildRelationships() {
     return Column(
       children: [
         Padding(
           padding: EdgeInsets.all(12.0),
-          child: SongRelatedAlbum(albumNames: albumNames),
+          child: SongRelatedAlbum(),
         )
       ],
     );
@@ -310,52 +308,65 @@ class SongRelatedAlbum extends StatefulWidget {
   State<StatefulWidget> createState() {
     return _SongRelatedAlbumState();
   }
-  final List<String> albumNames;
 
   const SongRelatedAlbum({
     Key key,
-    this.albumNames,
   }) : super(key: key);
 }
 
 class _SongRelatedAlbumState extends State<SongRelatedAlbum> {
 
-  String dropdownValue = 'Related Album';
-  List<String> items = new List();
-
-  @override
-  void initState() {
-    items.add(dropdownValue);
-    this.widget.albumNames.forEach((item) {
-      this.items.add(item);
-    });
-    super.initState();
-  }
+  final limit = {'start': 0, 'end': 30};
 
   @override
   Widget build(BuildContext context) {
-    return DropdownButton<String>(
-              value: dropdownValue,
-              icon: Icon(Icons.arrow_downward),
-              iconSize: 24,
-              elevation: 16,
-              style: TextStyle(color: Colors.deepPurple),
-              underline: Container(
-                height: 2,
-                color: Colors.deepPurpleAccent,
-              ),
-              onChanged: (String newValue) {
-                setState(() {
-                  dropdownValue = newValue;
-                });
-              },
-              items: items
-                  .map<DropdownMenuItem<String>>((String value) {
-                return DropdownMenuItem<String>(
-                  value: value,
-                  child: Text(value),
-                );
-              }).toList(),
-            );
+    return FutureBuilder<dynamic>(
+      future: DataService.getAlbums(limit),
+      builder: (BuildContext context, AsyncSnapshot<dynamic> snapshot) {
+        if (snapshot.hasData) {
+          List albums = snapshot.data;
+          return _buildAlbumList(albums, context);
+        } else if (snapshot.hasError) {
+          return Center(
+              child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: <Widget>[
+                    Icon(
+                      Icons.error_outline,
+                      color: Theme
+                          .of(context)
+                          .errorColor,
+                      size: 60,
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.only(top: 16),
+                      child: Text('Error: ${snapshot.error}'),
+                    )
+                  ]));
+        } else {
+          return showLoading();
+        }
+      },
+    );
+  }
+
+  _buildAlbumList(albums, context) {
+    return ListView.separated(
+      scrollDirection: Axis.vertical,
+      shrinkWrap: true,
+      padding: const EdgeInsets.all(8),
+      itemCount: albums.length,
+      itemBuilder: (BuildContext context, int index) {
+        return InkWell(
+            child: Container(
+              height: 40,
+              child: AlbumItem(albums[index]),
+            ),
+            onTap: () => {},
+        );
+      },
+      separatorBuilder: (BuildContext context, int index) => const Divider(),
+    );
   }
 }

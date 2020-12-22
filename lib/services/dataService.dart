@@ -197,7 +197,7 @@ class DataService {
     return artists;
   }
 
-  static Future<List<Album>> getAlbums() async {
+  static Future<List<Album>> getAlbums(Map<String, int> limit) async {
     var value = await loadAsset();
 
     var config = jsonDecode(value);
@@ -206,12 +206,13 @@ class DataService {
     String apiUrl = '${config['protocol']}://${config['api_host']}:${config['api_port']}/${config['api_endpoint']}';
     String apiKey = config['api_key'];
 
-    var response = await client.get(Uri.parse(apiUrl + '/albums/'),
+    var response = await client.get(Uri.parse(apiUrl + '/albums/limit' + '?start=' + limit['start'].toString() + '&end=' + limit['end'].toString()),
         headers: {
           HttpHeaders.authorizationHeader: apiKey
         });
 
-    var albumsJson = jsonDecode(response.body) as List;
+    Map pageableJson = jsonDecode(response.body);
+    var albumsJson = pageableJson['content'] as List;
 
     List<Album> albums = albumsJson.map((albumJson) {
       Album album = Album.fromJson(albumJson);
