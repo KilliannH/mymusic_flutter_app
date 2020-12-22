@@ -12,7 +12,10 @@ import '../../services/dataService.dart';
 import '../../constants.dart';
 
 class AddSongScreen extends StatefulWidget {
-  AddSongScreen({Key key}) : super(key: key);
+
+  final List<Album> albums;
+  final List<Artist> artists;
+  AddSongScreen({Key key, this.albums, this.artists}) : super(key: key);
 
   @override
   State<StatefulWidget> createState() {
@@ -49,63 +52,33 @@ class _AddSongScreenState extends State<AddSongScreen> {
     }
   }
 
-  Future<List<dynamic>> _getAllAlbumsAndArtists() async {
-    List responses;
-    try {
-      responses = await Future.wait(
-          [DataService.getAllArtists(), DataService.getAllAlbums()]);
-    } catch (e) {
-      return Future.error(e);
-    }
-    return responses;
+  @override
+  void initState() {
+    formList = [
+      _buildFirstForm(),
+      _buildSecondForm(),
+
+      // here we want to update _index witch is in the parent widget (this)
+      // there is no need to recall the widget like _AddSongScreenState() bcs it will not reffer to this.
+      SongRelatedAlbum(key: UniqueKey(), parent: this, albums: this.widget.albums),
+      SongRelatedArtists(key: UniqueKey(), parent: this, artists: widget.artists),
+      Center(),
+    ];
+    _loadingState = false;
+    super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: buildAppBar(context),
-        body: FutureBuilder<dynamic>(
-            // a previously-obtained Future<dynamic> or null
-            // we want to obtain all artists here as we don't want the artistRel widget to refresh his artists data
-            // when we toggle selected.
-            future: _getAllAlbumsAndArtists(),
-            builder:
-                (BuildContext navContext, AsyncSnapshot<dynamic> snapshot) {
-              if (snapshot.hasData) {
-                var artists = snapshot.data[0];
-                var albums = snapshot.data[1];
-                formList = [
-                  _buildFirstForm(),
-                  _buildSecondForm(navContext),
-
-                  // here we want to update _index wich is in the parent widget (this)
-                  // there is no need to recall the widget like _AddSongScreenState() bcs it will not reffer to this.
-                  SongRelatedAlbum(this, albums),
-                  SongRelatedArtists(this, artists),
-                  Center(),
-                ];
-                return Column(
-                    children: [_buildStepperDots(), formList[_index]]);
-              } else if (snapshot.hasError) {
-                return Center(
-                    child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: <Widget>[
-                      Icon(
-                        Icons.error_outline,
-                        color: Theme.of(context).errorColor,
-                        size: 60,
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.only(top: 16),
-                        child: Text('Error: ${snapshot.error}'),
-                      )
-                    ]));
-              } else {
-                return showLoading();
-              }
-            }));
+        body: Builder(
+            builder: (BuildContext navContext) {
+              return _loadingState ? showLoading() : Column(
+                  children: [_buildStepperDots(), formList[_index]]);
+            }
+            )
+    );
   }
 
   _buildFirstForm() {
@@ -153,7 +126,7 @@ class _AddSongScreenState extends State<AddSongScreen> {
     );
   }
 
-  _buildSecondForm(BuildContext _context) {
+  _buildSecondForm() {
     return Form(
       key: _formKeys[1],
       child: Column(
@@ -191,7 +164,7 @@ class _AddSongScreenState extends State<AddSongScreen> {
                         });
                         /*DataService.postSong(newSong).then((response) {
                                 if (response.statusCode == 200) { */
-                        _showContinueDialog(_context);
+                        _showContinueDialog();
                         //}
                         //}); /* successfully added song...  after a spinner*///);
                       }
@@ -207,9 +180,9 @@ class _AddSongScreenState extends State<AddSongScreen> {
     );
   }
 
-  Future<void> _showContinueDialog(navContext) async {
+  Future<void> _showContinueDialog() async {
     return showDialog<void>(
-      context: navContext,
+      context: context,
       barrierDismissible: false, // user must tap button!
       builder: (BuildContext context) {
         return AlertDialog(
@@ -225,7 +198,7 @@ class _AddSongScreenState extends State<AddSongScreen> {
             TextButton(
               child: Text('Cancel'),
               onPressed: () {
-                Navigator.push(navContext,
+                Navigator.push(context,
                     MaterialPageRoute(builder: (context) => MyApp()));
               },
             ),
@@ -342,7 +315,7 @@ class SongRelatedAlbum extends StatefulWidget {
   final List<Album> albums;
   final limit = {'start': 0, 'end': 30};
 
-  SongRelatedAlbum(this.parent, this.albums);
+  SongRelatedAlbum({Key key, this.parent, this.albums}): super(key: key);
 
   @override
   _SongRelatedAlbumState createState() => _SongRelatedAlbumState();
@@ -428,7 +401,7 @@ class SongRelatedArtists extends StatefulWidget {
   final _AddSongScreenState parent;
   final List<Artist> artists;
 
-  SongRelatedArtists(this.parent, this.artists);
+  SongRelatedArtists({Key key, this.parent, this.artists}): super(key: key);
 
   @override
   _SongRelatedArtistsState createState() => _SongRelatedArtistsState();

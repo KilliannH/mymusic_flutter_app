@@ -38,11 +38,23 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   final List<String> appRoutes = const ['Albums', 'Artists', 'Add'];
   final limit = { 'start': 0, 'end': 30 };
+  bool loadingState = false;
 
   @override
   void initState() {
     PathManager.setCurrPath('Songs');
     super.initState();
+  }
+
+  Future<List<dynamic>> _getAllAlbumsAndArtists() async {
+    List responses;
+    try {
+      responses = await Future.wait(
+          [DataService.getAllArtists(), DataService.getAllAlbums()]);
+    } catch (e) {
+      return Future.error(e);
+    }
+    return responses;
   }
 
   @override
@@ -71,32 +83,45 @@ class _MyAppState extends State<MyApp> {
             ),
           ),
           floatingActionButton: FloatingActionButton(
-            onPressed: () => Navigator.push(navContext, MaterialPageRoute(builder: (context) => AddSongScreen())),
+            onPressed: () async {
+              setState(() {
+                loadingState = true;
+              });
+              var responses = await this._getAllAlbumsAndArtists();
+              return Navigator.push(navContext,
+                  MaterialPageRoute(builder: (context) => AddSongScreen(artists: responses[0], albums: responses[1],)));
+            },
             child: Icon(Icons.add),
           ),
           body: FutureBuilder<dynamic>(
             future: DataService.getSongs(limit),
             // a previously-obtained Future<dynamic> or null
             builder: (BuildContext context, AsyncSnapshot<dynamic> snapshot) {
-              if (snapshot.hasData) {
-                List<Song> songs = snapshot.data;
-                return _buildSongList(songs, context);
-              } else if (snapshot.hasError) {
-                return Center(
-                    child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: <Widget>[
-                          Icon(
-                            Icons.error_outline,
-                            color: Theme.of(context).errorColor,
-                            size: 60,
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.only(top: 16),
-                            child: Text('Error: ${snapshot.error}'),
-                          )
-                        ]));
+              if(!loadingState) {
+                if (snapshot.hasData) {
+                  List<Song> songs = snapshot.data;
+                  return _buildSongList(songs, context);
+                } else if (snapshot.hasError) {
+                  return Center(
+                      child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: <Widget>[
+                            Icon(
+                              Icons.error_outline,
+                              color: Theme
+                                  .of(context)
+                                  .errorColor,
+                              size: 60,
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.only(top: 16),
+                              child: Text('Error: ${snapshot.error}'),
+                            )
+                          ]));
+                } else {
+                  return showLoading();
+                }
               } else {
                 return showLoading();
               }
