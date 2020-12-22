@@ -69,7 +69,7 @@ class _ArtistsScreenState extends State<ArtistsScreen> {
       itemBuilder: (BuildContext context, int index) {
         return InkWell(
             child: Container(
-              child: ArtistItem(artists[index].name, artists[index].imageUrl),
+              child: ArtistItem(artists[index]),
             ),
             onTap: () => Navigator.push(
                 context,

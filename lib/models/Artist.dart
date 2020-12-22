@@ -8,6 +8,7 @@ class Artist {
   String imageUrl;
   List<Song> songs;
   List<Album> albums;
+  bool selected = false;
 
   Artist({this.id, this.name, this.imageUrl});
 

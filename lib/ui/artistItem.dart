@@ -1,12 +1,12 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/painting.dart';
+import '../models/Artist.dart';
 
 class ArtistItem extends StatelessWidget {
-  final String name;
-  final String artistImg;
+  final Artist artist;
 
-  ArtistItem(this.name, this.artistImg);
+  ArtistItem(this.artist);
 
   @override
   Widget build(BuildContext context) {
@@ -18,7 +18,7 @@ class ArtistItem extends StatelessWidget {
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             image: DecorationImage(
-                image: NetworkImage(this.artistImg),
+                image: NetworkImage(this.artist.imageUrl),
                 fit: BoxFit.fill
             ),
           ),
@@ -26,7 +26,7 @@ class ArtistItem extends StatelessWidget {
         Padding(
           padding: const EdgeInsets.only(left: 12),
           child: Text(
-            name,
+            this.artist.name,
             style: TextStyle(fontSize: 18),
           ),
         ),

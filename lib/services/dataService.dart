@@ -197,6 +197,42 @@ class DataService {
     return artists;
   }
 
+  static Future<List<Artist>> getAllArtists() async {
+    var value = await loadAsset();
+
+    var config = jsonDecode(value);
+    var client = http.Client();
+
+    String apiUrl = '${config['protocol']}://${config['api_host']}:${config['api_port']}/${config['api_endpoint']}';
+    String apiKey = config['api_key'];
+
+    var response = await client.get(Uri.parse(apiUrl + '/artists/'),
+        headers: {
+          HttpHeaders.authorizationHeader: apiKey
+        });
+
+    var artistsJson = jsonDecode(response.body) as List;
+
+    List<Artist> artists = artistsJson.map((artistJson) {
+      Artist artist = Artist.fromJson(artistJson);
+      artist.albums = new List<Album>();
+      artist.songs = new List<Song>();
+
+      artistJson['songs'].forEach((songJson) {
+        Song song = new Song.fromJson(songJson);
+        artist.songs.add(song);
+      });
+
+      artistJson['albums'].forEach((albumJson) {
+        Album album = new Album.fromJson(albumJson);
+        artist.albums.add(album);
+      });
+      return artist;
+    }).toList();
+
+    return artists;
+  }
+
   static Future<List<Album>> getAlbums(Map<String, int> limit) async {
     var value = await loadAsset();
 
@@ -213,6 +249,42 @@ class DataService {
 
     Map pageableJson = jsonDecode(response.body);
     var albumsJson = pageableJson['content'] as List;
+
+    List<Album> albums = albumsJson.map((albumJson) {
+      Album album = Album.fromJson(albumJson);
+      album.artists = new List<Artist>();
+      album.songs = new List<Song>();
+
+      albumJson['songs'].forEach((songJson) {
+        Song song = new Song.fromJson(songJson);
+        album.songs.add(song);
+      });
+
+      albumJson['artists'].forEach((artistJson) {
+        Artist artist = new Artist.fromJson(artistJson);
+        album.artists.add(artist);
+      });
+      return album;
+    }).toList();
+
+    return albums;
+  }
+
+  static Future<List<Album>> getAllAlbums() async {
+    var value = await loadAsset();
+
+    var config = jsonDecode(value);
+    var client = http.Client();
+
+    String apiUrl = '${config['protocol']}://${config['api_host']}:${config['api_port']}/${config['api_endpoint']}';
+    String apiKey = config['api_key'];
+
+    var response = await client.get(Uri.parse(apiUrl + '/albums/'),
+        headers: {
+          HttpHeaders.authorizationHeader: apiKey
+        });
+
+    var albumsJson = jsonDecode(response.body) as List;
 
     List<Album> albums = albumsJson.map((albumJson) {
       Album album = Album.fromJson(albumJson);
