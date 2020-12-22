@@ -15,16 +15,16 @@ class AddSongScreen extends StatefulWidget {
 
   @override
   State<StatefulWidget> createState() {
-    return AddSongScreenState();
+    return _AddSongScreenState();
   }
 }
 
-class AddSongScreenState extends State<AddSongScreen> {
-  var _formKeys = [GlobalKey<FormState>(), GlobalKey<FormState>()];
+class _AddSongScreenState extends State<AddSongScreen> {
+  var _formKeys = [GlobalKey<FormState>(), GlobalKey<FormState>(), null, null];
 
   bool _loadingState = false;
   // todo -- remove this: dev path
-  int _index = 2;
+  int index = 2;
   int numberOfSteps = 5;
   List<Widget> formList;
 
@@ -34,14 +34,16 @@ class AddSongScreenState extends State<AddSongScreen> {
   _getDots() {
     final List<Widget> widgets = [];
     for (int i = 0; i < numberOfSteps; i++) {
-      widgets.add(ColorDot(color: Colors.blue, isSelected: _index == i));
+      widgets.add(ColorDot(color: Colors.blue, isSelected: index == i));
     }
     return widgets.toList();
   }
 
-  _validateForm(GlobalKey<FormState> formKey) {
-    if (formKey.currentState.validate()) {
-      _index++;
+  _toggleNextStep(GlobalKey<FormState> formKey) {
+    if (formKey != null && formKey.currentState.validate()) {
+      index++;
+    } else if (index >= 2) {
+      index++;
     }
   }
 
@@ -56,11 +58,16 @@ class AddSongScreenState extends State<AddSongScreen> {
                 formList = [
                   _buildFirstForm(),
                   _buildSecondForm(navContext),
-                  _buildRelationships()
+
+                  // here we want to update _index wich is in the parent widget (this)
+                  // there is no need to recall the widget like _AddSongScreenState() bcs it will not reffer to this.
+                  SongRelatedAlbum(this),
+                  Center(),
+                  Center(),
                 ];
                 return _loadingState
                     ? showLoading()
-                    : Column(children: [_buildStepperDots(), formList[_index]]);
+                    : Column(children: [_buildStepperDots(), formList[index]]);
         }));
   }
 
@@ -189,7 +196,7 @@ class AddSongScreenState extends State<AddSongScreen> {
               child: Text('OK'),
               color: Colors.deepPurple,
               onPressed: () {
-                _index++;
+                index++;
                 setState(() {
                   _loadingState = false;
                 });
@@ -210,21 +217,21 @@ class AddSongScreenState extends State<AddSongScreen> {
         crossAxisAlignment: CrossAxisAlignment.center,
         children: <Widget>[
           FlatButton(
-            onPressed: _index > 0
+            onPressed: index == 1 || index == 3
                 ? () => setState(() {
-                      _index--;
+                      index--;
                     })
                 : null,
             child: Row(
               children: <Widget>[
                 Icon(
                   Icons.keyboard_arrow_left,
-                  color: _index > 0 ? kTextColor : Colors.grey,
+                  color: index == 1 || index == 3 ? kTextColor : Colors.grey,
                 ),
                 Text(
                   'Back'.toUpperCase(),
                   style:
-                      TextStyle(color: _index > 0 ? kTextColor : Colors.grey),
+                      TextStyle(color: index == 1 || index == 3 ? kTextColor : Colors.grey),
                 ),
               ],
             ),
@@ -233,9 +240,9 @@ class AddSongScreenState extends State<AddSongScreen> {
             children: _getDots(),
           ),
           FlatButton(
-            onPressed: _index < _formKeys.length - 1
+            onPressed: index < _formKeys.length - 1
                 ? () => setState(() {
-                      _validateForm(_formKeys[_index]);
+                      _toggleNextStep(_formKeys[index]);
                     })
                 : null,
             child: Row(
@@ -243,31 +250,20 @@ class AddSongScreenState extends State<AddSongScreen> {
                 Text(
                   'Next'.toUpperCase(),
                   style: TextStyle(
-                      color: _index < _formKeys.length - 1
+                      color: index < _formKeys.length - 1
                           ? kTextColor
                           : Colors.grey),
                 ),
                 Icon(
                   Icons.keyboard_arrow_right,
                   color:
-                      _index < _formKeys.length - 1 ? kTextColor : Colors.grey,
+                      index < _formKeys.length - 1 ? kTextColor : Colors.grey,
                 )
               ],
             ),
           ),
         ],
       ),
-    );
-  }
-
-  _buildRelationships() {
-    return Column(
-      children: [
-        Padding(
-          padding: EdgeInsets.all(12.0),
-          child: SongRelatedAlbum(),
-        )
-      ],
     );
   }
 }
@@ -302,21 +298,12 @@ class ColorDot extends StatelessWidget {
   }
 }
 
-class SongRelatedAlbum extends StatefulWidget {
+class SongRelatedAlbum extends StatelessWidget {
 
-  @override
-  State<StatefulWidget> createState() {
-    return _SongRelatedAlbumState();
-  }
-
-  const SongRelatedAlbum({
-    Key key,
-  }) : super(key: key);
-}
-
-class _SongRelatedAlbumState extends State<SongRelatedAlbum> {
-
+  final _AddSongScreenState parent;
   final limit = {'start': 0, 'end': 30};
+
+  SongRelatedAlbum(this.parent);
 
   @override
   Widget build(BuildContext context) {
@@ -359,11 +346,15 @@ class _SongRelatedAlbumState extends State<SongRelatedAlbum> {
       itemCount: albums.length,
       itemBuilder: (BuildContext context, int index) {
         return InkWell(
-            child: Container(
-              height: 40,
-              child: AlbumItem(albums[index]),
-            ),
-            onTap: () => {},
+          child: Container(
+            height: 40,
+            child: AlbumItem(albums[index]),
+          ),
+          onTap: () {
+            this.parent.setState(() {
+              this.parent.index++;
+            });
+          }
         );
       },
       separatorBuilder: (BuildContext context, int index) => const Divider(),
