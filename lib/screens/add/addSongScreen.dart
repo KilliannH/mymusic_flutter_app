@@ -25,8 +25,13 @@ class AddSongScreen extends StatefulWidget {
 }
 
 class _AddSongScreenState extends State<AddSongScreen> {
-  var _formKeys = [GlobalKey<FormState>(), GlobalKey<FormState>(), null, null, null];
   final limit = {'start': 0, 'end': 30};
+
+  final _textEditingTitleController = TextEditingController();
+  final _textEditingFilenameController = TextEditingController();
+  final _textEditingYoutubeIdController = TextEditingController();
+
+  BuildContext _context;
 
   bool _loadingState = false;
   int _index = 0;
@@ -46,8 +51,28 @@ class _AddSongScreenState extends State<AddSongScreen> {
     return widgets.toList();
   }
 
-  _toggleNextStep(GlobalKey<FormState> formKey) {
-    if (formKey != null && formKey.currentState.validate()) {
+  _toggleNextStep() {
+
+    if(_index == 0) {
+      // check values
+      if(_textEditingTitleController.value.text != null && _textEditingTitleController.value.text != "") {
+        newSong.title = _textEditingTitleController.value.text;
+      } else {
+        return Scaffold
+            .of(_context)
+            .showSnackBar(SnackBar(content: Text('Error: title must be completed')));
+      }
+
+      if(_textEditingFilenameController.value.text != null && _textEditingFilenameController.value.text != "") {
+        newSong.filename = _textEditingFilenameController.value.text;
+      } else {
+        return Scaffold
+            .of(_context)
+            .showSnackBar(SnackBar(content: Text('Error: filename must be completed')));
+      }
+      if(youtubeId != null) {
+        _textEditingYoutubeIdController.value = TextEditingValue(text: youtubeId);
+      }
       _index++;
     } else if (_index >= 2) {
       if(_index == 4) {
@@ -81,6 +106,7 @@ class _AddSongScreenState extends State<AddSongScreen> {
         appBar: buildAppBar(context),
         body: Builder(
             builder: (BuildContext navContext) {
+              _context = navContext;
               return _loadingState ? showLoading() : Column(
                   children: [_buildStepperDots(), formList[_index]]);
             }
@@ -90,46 +116,25 @@ class _AddSongScreenState extends State<AddSongScreen> {
 
   _buildFirstForm() {
     return Form(
-      key: _formKeys[0],
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
           Padding(
             padding: const EdgeInsets.all(12.0),
             child: TextFormField(
-              initialValue: newSong.title != null ? newSong.title : null,
+              controller: _textEditingTitleController,
               decoration: const InputDecoration(
                 hintText: 'Title',
               ),
-              validator: (value) {
-                if (value.isEmpty) {
-                  return 'Please enter a title';
-                } else {
-                  setState(() {
-                    newSong.title = value.trim();
-                  });
-                  return null;
-                }
-              },
             ),
           ),
           Padding(
             padding: const EdgeInsets.all(12.0),
             child: TextFormField(
-              initialValue: newSong.filename != null ? newSong.filename : null,
+              controller: _textEditingFilenameController,
               decoration: const InputDecoration(
                 hintText: 'Filename',
               ),
-              validator: (value) {
-                if (value.isEmpty) {
-                  return 'Please enter a filename';
-                } else {
-                  setState(() {
-                    newSong.filename = value.trim();
-                  });
-                  return null;
-                }
-              },
             ),
           ),
         ],
@@ -139,27 +144,16 @@ class _AddSongScreenState extends State<AddSongScreen> {
 
   _buildSecondForm() {
     return Form(
-      key: _formKeys[1],
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
           Padding(
             padding: const EdgeInsets.all(12.0),
             child: TextFormField(
-              initialValue: youtubeId != null ? youtubeId : null,
+              controller: _textEditingYoutubeIdController,
               decoration: const InputDecoration(
                 hintText: 'Youtube Id',
               ),
-              validator: (value) {
-                if (value.isEmpty) {
-                  return 'Please enter the youtube id';
-                } else {
-                  setState(() {
-                    youtubeId = value.trim();
-                  });
-                  return null;
-                }
-              },
             ),
           ),
           Padding(
@@ -171,8 +165,9 @@ class _AddSongScreenState extends State<AddSongScreen> {
                   child: RaisedButton(
                     // no need to check the _formKey[0] bcs it has been checked when clicking on NEXT button
                     onPressed: () {
-                      if (_formKeys[1].currentState.validate()) {
+                      if (_textEditingYoutubeIdController.value.text != null && _textEditingYoutubeIdController.value.text != "") {
                         setState(() {
+                          youtubeId = _textEditingYoutubeIdController.value.text;
                           _loadingState = true;
                         });
                         DataService.newSong(newSong).then((response) {
@@ -192,6 +187,10 @@ class _AddSongScreenState extends State<AddSongScreen> {
                                   });
                                 }
                         }); /* successfully added song...  after a spinner*///);
+                      } else {
+                        return Scaffold
+                            .of(_context)
+                            .showSnackBar(SnackBar(content: Text('Error: youtubeId must be completed.')));
                       }
                     },
                     child: Text('Submit'.toUpperCase()),
@@ -257,8 +256,18 @@ class _AddSongScreenState extends State<AddSongScreen> {
           FlatButton(
             onPressed: _index == 1 || _index == 3 || _index == 4
                 ? () => setState(() {
-                      _index--;
-                    })
+                  if(_index == 1) {
+                    if(newSong.title != null) {
+                      setState(() {
+                        _textEditingTitleController.value = TextEditingValue(text: newSong.title);
+                      });
+                    }
+                    if(newSong.filename != null) {
+                      _textEditingFilenameController.value = TextEditingValue(text: newSong.filename);
+                    }
+                  }
+                  _index--;
+                })
                 : null,
             child: Row(
               children: <Widget>[
@@ -280,9 +289,9 @@ class _AddSongScreenState extends State<AddSongScreen> {
             children: _getDots(),
           ),
           FlatButton(
-            onPressed: _index < _formKeys.length - 1
+            onPressed: _index < formList.length - 1
                 ? () => setState(() {
-                      _toggleNextStep(_formKeys[_index]);
+                      _toggleNextStep();
                     })
                 : null,
             child: Row(
@@ -290,14 +299,14 @@ class _AddSongScreenState extends State<AddSongScreen> {
                 Text(
                   'Next'.toUpperCase(),
                   style: TextStyle(
-                      color: _index < _formKeys.length - 1
+                      color: _index < formList.length - 1
                           ? kTextColor
                           : Colors.grey),
                 ),
                 Icon(
                   Icons.keyboard_arrow_right,
                   color:
-                      _index < _formKeys.length - 1 ? kTextColor : Colors.grey,
+                      _index < formList.length - 1 ? kTextColor : Colors.grey,
                 )
               ],
             ),
