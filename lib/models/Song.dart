@@ -9,6 +9,7 @@ class Song {
   Album album;
   List<Artist> artists;
   String filename;
+  bool selected = false;
 
   int order;
 

@@ -1,30 +1,30 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:mymusicflutterapp/screens/add/addArtistScreen.dart';
+import 'package:mymusicflutterapp/screens/add/addAlbumScreen.dart';
 import '../../managers/pathManager.dart';
-import 'singleArtistScreen.dart';
+import 'singleAlbumScreen.dart';
 import '../../services/dataService.dart';
-import '../../ui/artistItem.dart';
+
 import '../../constants.dart';
 
-class ArtistsScreen extends StatefulWidget {
+class AlbumsScreen extends StatefulWidget {
   @override
   State<StatefulWidget> createState() {
-    return _ArtistsScreenState();
+    return _AlbumsScreenState();
   }
 
-  ArtistsScreen();
+  AlbumsScreen();
 }
 
-class _ArtistsScreenState extends State<ArtistsScreen> {
+class _AlbumsScreenState extends State<AlbumsScreen> {
 
   bool _loadingState = false;
 
-  Future<List<dynamic>> _getAllAlbumsAndSongs() async {
+  Future<List<dynamic>> _getAllArtistsAndSongs() async {
     List responses;
     try {
       responses = await Future.wait(
-          [DataService.getAllAlbums(), DataService.getAllSongs()]);
+          [DataService.getAllArtists(), DataService.getAllSongs()]);
     } catch (e) {
       return Future.error(e);
     }
@@ -33,7 +33,7 @@ class _ArtistsScreenState extends State<ArtistsScreen> {
 
   @override
   void initState() {
-    PathManager.setCurrPath('Artists');
+    PathManager.setCurrPath('Albums');
     super.initState();
   }
 
@@ -50,21 +50,21 @@ class _ArtistsScreenState extends State<ArtistsScreen> {
           setState(() {
             _loadingState = true;
           });
-          var responses = await this._getAllAlbumsAndSongs();
+          var responses = await this._getAllArtistsAndSongs();
           setState(() {
             _loadingState = false;
           });
           return Navigator.push(context,
-              MaterialPageRoute(builder: (context) => AddArtistScreen(albums: responses[0], songs: responses[1],)));
+              MaterialPageRoute(builder: (context) => AddAlbumScreen(artists: responses[0], songs: responses[1],)));
         },
         child: Icon(Icons.add),
       ),
       body: _loadingState ? showLoading() : FutureBuilder<dynamic>(
-        future: DataService.getAllArtists(),
+        future: DataService.getAllAlbums(),
         builder: (BuildContext context, AsyncSnapshot<dynamic> snapshot) {
           if (snapshot.hasData) {
-            List artists = snapshot.data;
-            return _buildArtistList(artists, context);
+            List albums = snapshot.data;
+            return _buildAlbumList(albums, context);
           } else if (snapshot.hasError) {
             return Center(
                 child: Column(
@@ -89,21 +89,32 @@ class _ArtistsScreenState extends State<ArtistsScreen> {
     );
   }
 
-  _buildArtistList(artists, context) {
-    return ListView.separated(
-      padding: const EdgeInsets.all(8),
-      itemCount: artists.length,
-      itemBuilder: (BuildContext context, int index) {
-        return InkWell(
-            child: Container(
-              child: ArtistItem(artists[index]),
-            ),
-            onTap: () => Navigator.push(
-                context,
-                MaterialPageRoute(
-                    builder: (context) => SingleArtistScreen(artists[index]))));
-      },
-      separatorBuilder: (BuildContext context, int index) => const Divider(),
+  _buildAlbumList(albums, context) {
+    return CustomScrollView(
+      primary: false,
+      slivers: <Widget>[
+        SliverPadding(
+          padding: const EdgeInsets.all(20),
+          sliver: SliverGrid.count(
+            crossAxisSpacing: 10,
+            mainAxisSpacing: 10,
+            crossAxisCount: 2,
+            children: albums.map<Widget>((album) {
+                return InkWell(
+                  child: Container(
+                    padding: const EdgeInsets.all(8),
+                    width: 500,
+                    height: 500,
+                    child: Image(
+                      image: NetworkImage(album.imageUrl),
+                    ),
+                  ),
+                  onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => SingleAlbumScreen(album))),
+                );
+              }).toList(),
+          ),
+        ),
+      ],
     );
   }
 }

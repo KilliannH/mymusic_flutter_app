@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mymusicflutterapp/managers/pathManager.dart';
+import 'package:mymusicflutterapp/screens/albums/albumsScreen.dart';
 import 'package:mymusicflutterapp/screens/playlists/playlistsScreen.dart';
 import 'main.dart';
 import 'models/Artist.dart';
@@ -53,7 +54,7 @@ buildAppBar(navContext) {
   return AppBar(title: Text(appName));
 }
 
-buildDrawer(context, currPath) {
+buildDrawer(context) {
   return [
     DrawerHeader(
       decoration: BoxDecoration(
@@ -80,6 +81,7 @@ buildDrawer(context, currPath) {
     ListTile(
       leading: Icon(Icons.image),
       title: Text('Albums'),
+      onTap: () => PathManager.getCurrPath() == 'Albums' ? Navigator.pop(context) : Navigator.push(context, MaterialPageRoute(builder: (context) => AlbumsScreen())),
     ),
     ListTile(
       leading: Icon(Icons.people_alt_rounded),

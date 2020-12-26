@@ -17,7 +17,6 @@ class PlaylistsScreen extends StatefulWidget {
 }
 
 class _PlaylistsScreenState extends State<PlaylistsScreen> {
-  final limit = {'start': 0, 'end': 20};
 
   @override
   void initState() {
@@ -31,10 +30,10 @@ class _PlaylistsScreenState extends State<PlaylistsScreen> {
       appBar: buildAppBar(context),
       drawer: Drawer(
         child:
-            ListView(padding: EdgeInsets.zero, children: buildDrawer(context, 'Artists')),
+            ListView(padding: EdgeInsets.zero, children: buildDrawer(context)),
       ),
       body: FutureBuilder<dynamic>(
-        future: DataService.getPlaylists(limit),
+        future: DataService.getAllPlaylists(),
         builder: (BuildContext context, AsyncSnapshot<dynamic> snapshot) {
           if (snapshot.hasData) {
             List playlists = snapshot.data;

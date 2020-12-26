@@ -1,32 +1,32 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:mymusicflutterapp/models/Album.dart';
 import '../../models/Song.dart';
 import '../../services/dataService.dart';
 import '../../constants.dart';
-import '../../models/Artist.dart';
 import '../playerScreen.dart';
 
 // When we are on this screen we want Songs from it, i mean songs from an Artist
 // but in Song format not in related song. Bcs on related one, we don't have artists data directly
-class SingleArtistScreen extends StatefulWidget {
+class SingleAlbumScreen extends StatefulWidget {
 
-  final Artist artist;
+  final Album album;
 
   @override
   State<StatefulWidget> createState() {
-    return _SingleArtistScreenState();
+    return _SingleAlbumScreenState();
   }
 
-  SingleArtistScreen(this.artist);
+  SingleAlbumScreen(this.album);
 }
 
-class _SingleArtistScreenState extends State<SingleArtistScreen> {
+class _SingleAlbumScreenState extends State<SingleAlbumScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: buildAppBar(context),
         body: FutureBuilder<dynamic>(
-          future: DataService.getAllSongsByArtistIds([widget.artist.id]),
+          future: DataService.getAllSongsByAlbumId(widget.album.id),
           builder: (BuildContext context, AsyncSnapshot<dynamic> snapshot) {
             if (snapshot.hasData) {
               List<Song> songs = snapshot.data;
@@ -37,18 +37,15 @@ class _SingleArtistScreenState extends State<SingleArtistScreen> {
                     Container(
                       width: 100,
                       height: 100,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        image: DecorationImage(
-                            image: NetworkImage(widget.artist.imageUrl),
+                      child: Image(
+                        image: NetworkImage(widget.album.imageUrl),
                             fit: BoxFit.fill
                         ),
-                      ),
                     ),
                     Padding(
                       padding: const EdgeInsets.all(8.0),
                       child: Text(
-                        widget.artist.name,
+                        widget.album.title,
                         style: TextStyle(fontSize: 24),
                       ),
                     ),

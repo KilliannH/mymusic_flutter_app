@@ -36,9 +36,7 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  final List<String> appRoutes = const ['Albums', 'Artists', 'Add'];
-  final limit = { 'start': 0, 'end': 30 };
-  bool loadingState = false;
+  bool _loadingState = false;
 
   @override
   void initState() {
@@ -66,11 +64,11 @@ class _MyAppState extends State<MyApp> {
           // Define the default brightness and colors.
             brightness: Brightness.light,
             primaryColor: Colors.blue,
-            accentColor: Colors.amber,
+            accentColor: Colors.pink,
             errorColor: Colors.red,
           floatingActionButtonTheme: FloatingActionButtonThemeData(
             foregroundColor: Colors.white,
-            backgroundColor: Colors.amber
+            backgroundColor: Colors.pink
           )
         ),
       home: Builder(
@@ -79,25 +77,25 @@ class _MyAppState extends State<MyApp> {
           drawer: Drawer(
             child: ListView(
               padding: EdgeInsets.zero,
-              children: buildDrawer(navContext, 'Songs')
+              children: buildDrawer(navContext)
             ),
           ),
           floatingActionButton: FloatingActionButton(
             onPressed: () async {
               setState(() {
-                loadingState = true;
+                _loadingState = true;
               });
               var responses = await this._getAllAlbumsAndArtists();
               setState(() {
-                loadingState = false;
+                _loadingState = false;
               });
               return Navigator.push(navContext,
                   MaterialPageRoute(builder: (context) => AddSongScreen(artists: responses[0], albums: responses[1],)));
             },
             child: Icon(Icons.add),
           ),
-          body: loadingState ? showLoading() : FutureBuilder<dynamic>(
-            future: DataService.getSongs(limit),
+          body: _loadingState ? showLoading() : FutureBuilder<dynamic>(
+            future: DataService.getAllSongs(),
             // a previously-obtained Future<dynamic> or null
             builder: (BuildContext context, AsyncSnapshot<dynamic> snapshot) {
               if (snapshot.hasData) {

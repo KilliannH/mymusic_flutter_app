@@ -25,7 +25,6 @@ class AddSongScreen extends StatefulWidget {
 }
 
 class _AddSongScreenState extends State<AddSongScreen> {
-  final limit = {'start': 0, 'end': 30};
 
   final _textEditingTitleController = TextEditingController();
   final _textEditingFilenameController = TextEditingController();
@@ -210,7 +209,7 @@ class _AddSongScreenState extends State<AddSongScreen> {
       barrierDismissible: false, // user must tap button!
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Song added successfully'),
+          title: Text('Song added successfully!'),
           content: SingleChildScrollView(
             child: ListBody(
               children: <Widget>[
@@ -327,11 +326,10 @@ class _AddSongScreenState extends State<AddSongScreen> {
           setState(() {
             _loadingState = true;
           });
-          Song persistedSong = await DataService.newSong(newSong);
-          await DataService.newSongAlbum(persistedSong.id, newSong.album.id);
+          await DataService.newSongAlbum(newSong.id, newSong.album.id);
           List<Future> futures;
           newSong.artists.forEach((artist) {
-            futures.add(DataService.newSongArtist(persistedSong.id, artist.id));
+            futures.add(DataService.newSongArtist(newSong.id, artist.id));
           });
           try {
             await Future.wait(futures);
@@ -340,7 +338,7 @@ class _AddSongScreenState extends State<AddSongScreen> {
           }
           Scaffold
               .of(context)
-              .showSnackBar(SnackBar(content: Text('Song added successfully!')));
+              .showSnackBar(SnackBar(content: Text('Relations added successfully!')));
           return MaterialPageRoute(builder: (context) => MyApp());
         }, child: Text('Submit'.toUpperCase())),
         ),
@@ -409,9 +407,6 @@ class _SongRelatedAlbumState extends State<SongRelatedAlbum> {
               child: _buildAlbumRelItem(albums[index]),
             ),
             onTap: () {
-              /*this.widget.parent.setState(() {
-              this.widget.parent.newSong.album = albums[index];
-            });*/
               setState(() {
                 albums.forEach((album) {
                   if (album.selected && album.id != albums[index].id) {
@@ -419,6 +414,9 @@ class _SongRelatedAlbumState extends State<SongRelatedAlbum> {
                   }
                 });
                 albums[index].selected = !albums[index].selected;
+              });
+              this.widget.parent.setState(() {
+                this.widget.parent.newSong.album = albums[index];
               });
             });
       },
@@ -496,14 +494,24 @@ class _SongRelatedArtistsState extends State<SongRelatedArtists> {
               child: _buildArtistRelItem(artists[index]),
             ),
             onTap: () {
-              /*this.widget.parent.setState(() {
+              setState(() {
+                artists[index].selected = !artists[index].selected;
+              });
+              this.widget.parent.setState(() {
                 if(this.widget.parent.newSong.artists == null) {
                   this.widget.parent.newSong.artists = new List<Artist>();
                 }
-                this.widget.parent.newSong.artists.add(artists[index]);
-              });*/
-              setState(() {
-                artists[index].selected = !artists[index].selected;
+                if(artists[index].selected) {
+                  if (this.widget.parent.newSong.artists.indexOf(
+                      artists[index]) == -1) {
+                    this.widget.parent.newSong.artists.add(artists[index]);
+                  }
+                } else {
+                  if (this.widget.parent.newSong.artists.indexOf(
+                      artists[index]) != -1) {
+                    this.widget.parent.newSong.artists.remove(artists[index]);
+                  }
+                }
               });
             });
       },

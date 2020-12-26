@@ -215,24 +215,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
   }
 
   _buildAppBar(navContext) {
-    return AppBar(title: Text('My Music'), actions: <Widget>[
-      // overflow menu
-      PopupMenuButton<Object>(
-        onSelected: (value) {
-          if(value == 1) {
-            // Navigator.push(navContext, MaterialPageRoute(builder: (context) => AddSongScreen()));
-          }
-        },
-        itemBuilder: (BuildContext context) {
-          var list = List<PopupMenuEntry<Object>>();
-          list.add(PopupMenuItem<Object>(
-            value: 1,
-            child: Text('Add New'),
-          ));
-          return list;
-        },
-      ),
-    ]);
+    return AppBar(title: Text('My Music'));
   }
 
   @override
@@ -306,14 +289,6 @@ class _PlayerScreenState extends State<PlayerScreen> {
                   children: <Widget>[
                     Spacer(),
                     IconButton(
-                        iconSize: 28,
-                        icon: Icon(Icons.favorite_border),
-                        onPressed: () {
-                          _handleFavorite();
-                        }
-                    ),
-                    Spacer(),
-                    IconButton(
                         iconSize: 32,
                         icon: Icon(Icons.skip_previous),
                         onPressed: () => skipPrev()
@@ -327,14 +302,6 @@ class _PlayerScreenState extends State<PlayerScreen> {
                         iconSize: 32,
                         icon: Icon(Icons.skip_next),
                         onPressed: widget.songList.indexOf(currentSong) < widget.songList.length -1 ? () => skipNext() : null
-                    ),
-                    Spacer(),
-                    IconButton(
-                        iconSize: 28,
-                        icon: Icon(Icons.repeat),
-                        onPressed: () {
-                          _handleRepeat();
-                        }
                     ),
                     Spacer()
                   ],
